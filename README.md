@@ -1,4 +1,5 @@
 # Simple Schema Definition Language
+[![Build Status](https://travis-ci.org/paidgeek/ssdl.svg?branch=master)](https://travis-ci.org/paidgeek/ssdl)
 
 ## Example
 ```go
