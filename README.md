@@ -3,7 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/paidgeek/ssdl)](https://goreportcard.com/report/github.com/paidgeek/ssdl)
 
 ## Grammar
-```
+```xml
 <Document>:
     <EOF>
     <Definition> <Document>
@@ -24,7 +24,7 @@
 ```
 
 ## Example
-```go
+```python
 enum Quality { Common, Rate, Epic }
 
 type Item {

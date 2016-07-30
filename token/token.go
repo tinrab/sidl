@@ -33,7 +33,7 @@ const (
 	typeEnd
 )
 
-var tokens = [...]string {
+var tokens = [...]string{
 	EOF: "EOF",
 	Identifier: "Identifier",
 	Comma:",",

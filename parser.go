@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/paidgeek/ssdl/token"
+	"github.com/paidgeek/ssdl/ast"
 )
 
 type Parser struct {
@@ -10,60 +11,109 @@ type Parser struct {
 	next    Symbol
 }
 
-func (p *Parser) Parse() {
+func (p *Parser) Parse() *ast.Document {
 	p.next = p.lexer.Next()
+	definitions := make([]ast.Node, 0)
 
 	for !p.match(token.EOF) {
-		p.parseDefinition()
+		definitions = append(definitions, p.parseDefinition())
+		p.accept(token.NewLine)
+	}
+
+	return &ast.Document{
+		Definitions:definitions,
 	}
 }
 
-func (p *Parser) parseDefinition() {
+func (p *Parser) parseDefinition() ast.Node {
 	switch p.peek() {
 	case token.KeywordType:
-		p.parseTypeDefinition()
+		return p.parseTypeDefinition()
 	case token.KeywordEnum:
-		p.parseEnumDefinition()
+		return p.parseEnumDefinition()
+	}
+	return nil
+}
+
+func (p *Parser) parseTypeDefinition() *ast.TypeDefinition {
+	p.check(token.KeywordType)
+	name := p.parseIdentifier()
+	p.check(token.OpenBrace)
+	fields := p.parseFieldList()
+	p.check(token.CloseBrace)
+
+	return &ast.TypeDefinition{
+		Name:name,
+		Fields:fields,
 	}
 }
 
-func (p *Parser) parseTypeDefinition() {
-	p.check(token.KeywordType, token.Identifier, token.OpenBrace)
-	p.parseFieldList()
+func (p *Parser) parseEnumDefinition() *ast.EnumDefinition {
+	p.check(token.KeywordEnum)
+	name := p.parseIdentifier()
+	p.check(token.OpenBrace)
+	values := p.parseIdentifierList()
 	p.check(token.CloseBrace)
+
+	return &ast.EnumDefinition{
+		Name:name,
+		Values:values,
+	}
 }
 
-func (p *Parser) parseEnumDefinition() {
-	p.check(token.KeywordEnum, token.Identifier, token.OpenBrace)
-	p.parseIdentifierList()
-	p.check(token.CloseBrace)
-}
+func (p *Parser) parseFieldList() []*ast.Field {
+	fields := make([]*ast.Field, 0)
 
-func (p *Parser) parseFieldList() {
 	for p.match(token.Identifier) {
-		p.parseField()
+		fields = append(fields, p.parseField())
 
 		if !p.accept(token.NewLine, token.Comma) {
 			break
 		}
 	}
+
+	return fields
 }
 
-func (p *Parser) parseIdentifierList() {
-	for p.accept(token.Identifier) {
+func (p *Parser) parseIdentifierList() []*ast.Identifier {
+	identifiers := make([]*ast.Identifier, 0)
+
+	for p.match(token.Identifier) {
+		identifiers = append(identifiers, p.parseIdentifier())
 		if !p.accept(token.NewLine, token.Comma) {
 			break
 		}
 	}
+
+	return identifiers
 }
 
-func (p *Parser) parseField() {
+func (p *Parser) parseField() *ast.Field {
+	name := p.parseIdentifier()
+	t := p.parseType()
+
+	return &ast.Field{
+		Name:name,
+		Type:t,
+	}
+}
+
+func (p *Parser) parseIdentifier() *ast.Identifier {
 	p.check(token.Identifier)
+	return &ast.Identifier{
+		Name:p.current.Lexeme,
+	}
+}
 
+func (p *Parser) parseType() ast.Node {
 	if p.peek().IsType() {
 		p.accept(p.peek())
+
+		return &ast.Type{
+			Token:p.current.Token,
+		}
 	} else {
-		panic(reportf(p.current.Position, "invalid type"))
+		return p.parseIdentifier()
 	}
 }
 
