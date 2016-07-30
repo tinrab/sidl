@@ -1,9 +1,9 @@
-package lexer
+package main
 
 import (
 	"bytes"
-	"github.com/paidgeek/ssdl/token"
 	"testing"
+	"github.com/paidgeek/ssdl/token"
 )
 
 func TestEOF(t *testing.T) {
@@ -17,18 +17,21 @@ func TestComments(t *testing.T)  {
 	b := bytes.NewBufferString("# comment\n string #another aw type int64 \n # and another")
 	lexer := NewLexer(b)
 
+	assertToken(t, token.NewLine, lexer.Next().Token)
 	assertToken(t, token.TypeString, lexer.Next().Token)
+	assertToken(t, token.NewLine, lexer.Next().Token)
 	assertToken(t, token.EOF, lexer.Next().Token)
 }
 
 func TestSymbols(t *testing.T) {
-	b := bytes.NewBufferString("*,{}[]")
+	b := bytes.NewBufferString("*,{}\n[]")
 	lexer := NewLexer(b)
 
 	assertToken(t, token.Asterisk, lexer.Next().Token)
 	assertToken(t, token.Comma, lexer.Next().Token)
 	assertToken(t, token.OpenBrace, lexer.Next().Token)
 	assertToken(t, token.CloseBrace, lexer.Next().Token)
+	assertToken(t, token.NewLine, lexer.Next().Token)
 	assertToken(t, token.Brackets, lexer.Next().Token)
 	assertToken(t, token.EOF, lexer.Next().Token)
 }

@@ -1,4 +1,4 @@
-package lexer
+package main
 
 import (
 	"bufio"
@@ -12,14 +12,18 @@ import (
 var eof = rune(0)
 
 type Lexer struct {
-	r *bufio.Reader
+	r          *bufio.Reader
+	wasNewLine bool
+	column     int
+	line       int
 }
 
-func (m *Lexer) Next() (symbol Symbol) {
-	symbol.Token = token.EOF
+func (m *Lexer) Next() Symbol {
 	ch := m.read()
 
 	for ch != eof {
+		m.column++
+
 		if util.IsLowerCaseLetter(ch) {
 			m.unread()
 			return m.scanLowerCaseWord()
@@ -29,46 +33,57 @@ func (m *Lexer) Next() (symbol Symbol) {
 		} else if !util.IsWhitespace(ch) {
 			switch ch {
 			case '#':
-				m.scanComment()
+				return m.scanComment()
 			case '*':
-				symbol.Token = token.Asterisk
-				return symbol
+				return m.newSymbol(token.Asterisk)
 			case ',':
-				symbol.Token = token.Comma
-				return symbol
+				return m.newSymbol(token.Comma)
 			case '{':
-				symbol.Token = token.OpenBrace
-				return symbol
+				return m.newSymbol(token.OpenBrace)
 			case '}':
-				symbol.Token = token.CloseBrace
-				return symbol
+				return m.newSymbol(token.CloseBrace)
 			case '[':
 				ch = m.read()
 				if ch != ']' {
 					panic(fmt.Sprintf("expected ']', got '%c'", ch))
 				}
 
-				symbol.Token = token.Brackets
-				return symbol
+				return m.newSymbol(token.Brackets)
 			default:
 				panic(fmt.Sprintf("invalid character '%c'", ch))
 			}
+		} else if util.IsNewLine(ch) && !m.wasNewLine {
+			m.wasNewLine = true
+			return m.newSymbol(token.NewLine)
 		}
 
+		m.wasNewLine = false
 		ch = m.read()
 	}
 
-	return symbol
+	return m.newSymbol(token.EOF)
 }
 
-func (m *Lexer) scanComment() {
+func (m *Lexer) scanComment() Symbol {
 	ch := m.read()
 	for !util.IsNewLine(ch) && ch != eof {
 		ch = m.read()
 	}
+
+	t := token.EOF
+	lex := ""
+	if ch == eof {
+		t = token.EOF
+	} else if util.IsNewLine(ch) {
+		lex = "\n"
+		t = token.NewLine
+		m.wasNewLine = true
+	}
+
+	return m.newSymbolLexeme(t, lex)
 }
 
-func (m *Lexer) scanLowerCaseWord() (symbol Symbol) {
+func (m *Lexer) scanLowerCaseWord() Symbol {
 	var buf bytes.Buffer
 	buf.WriteRune(m.read())
 
@@ -83,44 +98,45 @@ func (m *Lexer) scanLowerCaseWord() (symbol Symbol) {
 		}
 	}
 
-	symbol.Lexeme = buf.String()
+	lex := buf.String()
+	t := token.EOF
 
-	switch symbol.Lexeme {
+	switch lex {
 	case "type":
-		symbol.Token = token.KeywordType
+		t = token.KeywordType
 	case "enum":
-		symbol.Token = token.KeywordEnum
+		t = token.KeywordEnum
 	case "string":
-		symbol.Token = token.TypeString
+		t = token.TypeString
 	case "int":
-		symbol.Token = token.TypeInt
+		t = token.TypeInt
 	case "int8":
-		symbol.Token = token.TypeInt8
+		t = token.TypeInt8
 	case "int16":
-		symbol.Token = token.TypeInt16
+		t = token.TypeInt16
 	case "int32":
-		symbol.Token = token.TypeInt32
+		t = token.TypeInt32
 	case "int64":
-		symbol.Token = token.TypeInt64
+		t = token.TypeInt64
 	case "uint":
-		symbol.Token = token.TypeUInt
+		t = token.TypeUInt
 	case "uint8":
-		symbol.Token = token.TypeUInt8
+		t = token.TypeUInt8
 	case "uint16":
-		symbol.Token = token.TypeUInt16
+		t = token.TypeUInt16
 	case "uint32":
-		symbol.Token = token.TypeUInt32
+		t = token.TypeUInt32
 	case "uint64":
-		symbol.Token = token.TypeUInt64
+		t = token.TypeUInt64
 	case "float32":
-		symbol.Token = token.TypeFloat32
+		t = token.TypeFloat32
 	case "float64":
-		symbol.Token = token.TypeFloat64
+		t = token.TypeFloat64
 	default:
-		symbol.Token = token.Identifier
+		t = token.Identifier
 	}
 
-	return symbol
+	return m.newSymbolLexeme(t, lex)
 }
 
 func (m *Lexer) scanIdentifier() (symbol Symbol) {
@@ -154,6 +170,14 @@ func (m *Lexer) read() rune {
 
 func (m *Lexer) unread() {
 	m.r.UnreadRune()
+}
+
+func (m *Lexer) newSymbol(token token.Token) Symbol {
+	return NewSymbol(token, token.String(), m.line, m.column)
+}
+
+func (m *Lexer) newSymbolLexeme(token token.Token, lexeme string) Symbol {
+	return NewSymbol(token, lexeme, m.line, m.column)
 }
 
 func NewLexer(r io.Reader) *Lexer {

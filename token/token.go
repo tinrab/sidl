@@ -8,6 +8,7 @@ const (
 	EOF Token = iota
 	Identifier
 	Comma
+	NewLine
 	Asterisk
 	OpenBrace
 	CloseBrace
@@ -15,6 +16,7 @@ const (
 	KeywordEnum
 	Brackets
 
+	typeBegin
 	TypeString
 	TypeInt
 	TypeInt8
@@ -28,12 +30,14 @@ const (
 	TypeUInt64
 	TypeFloat32
 	TypeFloat64
+	typeEnd
 )
 
 var tokens = [...]string {
 	EOF: "EOF",
 	Identifier: "Identifier",
 	Comma:",",
+	NewLine:"\\n",
 	Asterisk:"*",
 	OpenBrace:"{",
 	CloseBrace:"}",
@@ -65,4 +69,8 @@ func (t Token) String() string {
 		s = "Token(" + strconv.Itoa(int(t)) + ")"
 	}
 	return s
+}
+
+func (t Token) IsType() bool {
+	return t > typeBegin && t < typeEnd
 }
