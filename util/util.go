@@ -4,6 +4,10 @@ func IsWhitespace(ch rune) bool {
 	return ch == ' ' || ch == '\t' || ch == '\n'
 }
 
+func IsNewLine(ch rune) bool  {
+	return ch == '\t' || ch == '\n'
+}
+
 func IsLetter(ch rune) bool {
 	return IsLowerCaseLetter(ch) || IsUpperCaseLetter(ch)
 }

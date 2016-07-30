@@ -13,6 +13,14 @@ func TestEOF(t *testing.T) {
 	assertToken(t, token.EOF, lexer.Next().Token)
 }
 
+func TestComments(t *testing.T)  {
+	b := bytes.NewBufferString("# comment\n string #another aw type int64 \n # and another")
+	lexer := NewLexer(b)
+
+	assertToken(t, token.TypeString, lexer.Next().Token)
+	assertToken(t, token.EOF, lexer.Next().Token)
+}
+
 func TestSymbols(t *testing.T) {
 	b := bytes.NewBufferString("*,{}[]")
 	lexer := NewLexer(b)

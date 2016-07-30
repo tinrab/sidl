@@ -23,19 +23,25 @@ func (m *Lexer) Next() (symbol Symbol) {
 		if util.IsLowerCaseLetter(ch) {
 			m.unread()
 			return m.scanLowerCaseWord()
-		} else if (util.IsUpperCaseLetter(ch)) {
+		} else if util.IsUpperCaseLetter(ch) {
 			m.unread()
 			return m.scanIdentifier()
 		} else if !util.IsWhitespace(ch) {
 			switch ch {
+			case '#':
+				m.scanComment()
 			case '*':
 				symbol.Token = token.Asterisk
+				return symbol
 			case ',':
 				symbol.Token = token.Comma
+				return symbol
 			case '{':
 				symbol.Token = token.OpenBrace
+				return symbol
 			case '}':
 				symbol.Token = token.CloseBrace
+				return symbol
 			case '[':
 				ch = m.read()
 				if ch != ']' {
@@ -43,17 +49,23 @@ func (m *Lexer) Next() (symbol Symbol) {
 				}
 
 				symbol.Token = token.Brackets
+				return symbol
 			default:
 				panic(fmt.Sprintf("invalid character '%c'", ch))
 			}
-
-			return symbol
 		}
 
 		ch = m.read()
 	}
 
 	return symbol
+}
+
+func (m *Lexer) scanComment() {
+	ch := m.read()
+	for !util.IsNewLine(ch) && ch != eof {
+		ch = m.read()
+	}
 }
 
 func (m *Lexer) scanLowerCaseWord() (symbol Symbol) {
