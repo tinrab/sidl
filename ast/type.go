@@ -3,8 +3,12 @@ package ast
 import "github.com/paidgeek/ssdl/token"
 
 type Type struct {
-	Token token.Token
-	Name  *Identifier
+	IsInnerType bool
+	IsList      bool
+	IsReference bool
+	Token       token.Token
+	Name        *Identifier
+	Fields      []*Field
 }
 
 func (n *Type) Accept(visitor Visitor) {

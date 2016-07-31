@@ -8,7 +8,6 @@ const (
 	EOF Token = iota
 	Identifier
 	Comma
-	NewLine
 	Asterisk
 	OpenBrace
 	CloseBrace
@@ -37,7 +36,6 @@ var tokens = [...]string{
 	EOF: "EOF",
 	Identifier: "Identifier",
 	Comma:",",
-	NewLine:"\\n",
 	Asterisk:"*",
 	OpenBrace:"{",
 	CloseBrace:"}",

@@ -17,7 +17,6 @@ func (p *Parser) Parse() *ast.Document {
 
 	for !p.match(token.EOF) {
 		definitions = append(definitions, p.parseDefinition())
-		p.accept(token.NewLine)
 	}
 
 	return &ast.Document{
@@ -39,14 +38,8 @@ func (p *Parser) parseDefinition() ast.Definition {
 
 func (p *Parser) parseTypeDefinition() *ast.TypeDefinition {
 	p.check(token.KeywordType)
-	p.accept(token.NewLine)
 	name := p.parseIdentifier()
-	p.accept(token.NewLine)
-	p.check(token.OpenBrace)
-	p.accept(token.NewLine)
 	fields := p.parseFieldList()
-	p.accept(token.NewLine)
-	p.check(token.CloseBrace)
 
 	return &ast.TypeDefinition{
 		Name:name,
@@ -56,14 +49,8 @@ func (p *Parser) parseTypeDefinition() *ast.TypeDefinition {
 
 func (p *Parser) parseEnumDefinition() *ast.EnumDefinition {
 	p.check(token.KeywordEnum)
-	p.accept(token.NewLine)
 	name := p.parseIdentifier()
-	p.accept(token.NewLine)
-	p.check(token.OpenBrace)
-	p.accept(token.NewLine)
 	values := p.parseIdentifierList()
-	p.accept(token.NewLine)
-	p.check(token.CloseBrace)
 
 	return &ast.EnumDefinition{
 		Name:name,
@@ -72,28 +59,27 @@ func (p *Parser) parseEnumDefinition() *ast.EnumDefinition {
 }
 
 func (p *Parser) parseFieldList() []*ast.Field {
+	p.check(token.OpenBrace)
 	fields := make([]*ast.Field, 0)
 
 	for p.match(token.Identifier) {
 		fields = append(fields, p.parseField())
-
-		if !p.accept(token.NewLine, token.Comma) {
-			break
-		}
+		p.accept(token.Comma)
 	}
+	p.check(token.CloseBrace)
 
 	return fields
 }
 
 func (p *Parser) parseIdentifierList() []*ast.Identifier {
+	p.check(token.OpenBrace)
 	identifiers := make([]*ast.Identifier, 0)
 
 	for p.match(token.Identifier) {
 		identifiers = append(identifiers, p.parseIdentifier())
-		if !p.accept(token.NewLine, token.Comma) {
-			break
-		}
+		p.accept(token.Comma)
 	}
+	p.check(token.CloseBrace)
 
 	return identifiers
 }
@@ -116,10 +102,25 @@ func (p *Parser) parseIdentifier() *ast.Identifier {
 }
 
 func (p *Parser) parseType() *ast.Type {
+	isList := p.accept(token.Brackets)
+
+	if p.match(token.OpenBrace) {
+		fields := p.parseFieldList()
+
+		return &ast.Type{
+			IsInnerType:true,
+			Fields:fields,
+		}
+	}
+
+	isReference := p.accept(token.Asterisk)
+
 	if p.match(token.Identifier) {
 		return &ast.Type{
 			Name:p.parseIdentifier(),
 			Token:token.Identifier,
+			IsList:isList,
+			IsReference:isReference,
 		}
 	} else {
 		if !p.peek().IsType() {
@@ -130,6 +131,8 @@ func (p *Parser) parseType() *ast.Type {
 
 		return &ast.Type{
 			Token:p.current.Token,
+			IsList:isList,
+			IsReference:isReference,
 		}
 	}
 }

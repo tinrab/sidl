@@ -1,6 +1,5 @@
 # Simple Schema Definition Language
 [![Build Status](https://travis-ci.org/paidgeek/ssdl.svg?branch=master)](https://travis-ci.org/paidgeek/ssdl)
-[![Go Report Card](https://goreportcard.com/badge/github.com/paidgeek/ssdl)](https://goreportcard.com/report/github.com/paidgeek/ssdl)
 
 ## Grammar
 ```xml
@@ -15,6 +14,7 @@
     <Field> <ListDelimiter> <FieldList>
 <Field>:
     [Identifier] [Type]
+    { <FieldList> }
 <IdentifierList>:
     [Identifier]
     [Identifier] <ListDelimiter> <IdentifierList>
@@ -29,17 +29,22 @@ enum Quality { Common, Rate, Epic }
 
 type Item {
 	Name string
-	Cost uint64
 	Quality Quality
+    Cost uint64
+	# inner type
+	Buff {
+	    Attribute int
+	    Amount float64
+	}
 }
 
 type Inventory {
 	Capacity int
-	Items []*Item # these are references
+	Items []*Item # references
 }
 
 type Character {
 	Name string
-	Holding []Item # embedded items
+	Bag []Item # embedded
 }
 ```

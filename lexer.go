@@ -12,7 +12,6 @@ var eof = rune(0)
 
 type Lexer struct {
 	r          *bufio.Reader
-	wasNewLine bool
 	column     int
 	line       int
 }
@@ -30,7 +29,7 @@ func (m *Lexer) Next() Symbol {
 		} else if !util.IsWhitespace(ch) {
 			switch ch {
 			case '#':
-				return m.scanComment()
+				m.scanComment()
 			case '*':
 				return m.newSymbol(token.Asterisk)
 			case ',':
@@ -49,35 +48,19 @@ func (m *Lexer) Next() Symbol {
 			default:
 				panic(reportf(Position{m.column,m.line}, "invalid character '%c'", ch))
 			}
-		} else if util.IsNewLine(ch) && !m.wasNewLine {
-			m.wasNewLine = true
-			return m.newSymbol(token.NewLine)
 		}
 
-		m.wasNewLine = false
 		ch = m.read()
 	}
 
 	return m.newSymbol(token.EOF)
 }
 
-func (m *Lexer) scanComment() Symbol {
+func (m *Lexer) scanComment() {
 	ch := m.read()
 	for !util.IsNewLine(ch) && ch != eof {
 		ch = m.read()
 	}
-
-	t := token.EOF
-	lex := ""
-	if ch == eof {
-		t = token.EOF
-	} else if util.IsNewLine(ch) {
-		lex = "\n"
-		t = token.NewLine
-		m.wasNewLine = true
-	}
-
-	return m.newSymbolLexeme(t, lex)
 }
 
 func (m *Lexer) scanLowerCaseWord() Symbol {
