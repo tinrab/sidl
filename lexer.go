@@ -6,7 +6,6 @@ import (
 	"github.com/paidgeek/ssdl/token"
 	"github.com/paidgeek/ssdl/util"
 	"bytes"
-	"fmt"
 )
 
 var eof = rune(0)
@@ -22,8 +21,6 @@ func (m *Lexer) Next() Symbol {
 	ch := m.read()
 
 	for ch != eof {
-		m.column++
-
 		if util.IsLowerCaseLetter(ch) {
 			m.unread()
 			return m.scanLowerCaseWord()
@@ -45,12 +42,12 @@ func (m *Lexer) Next() Symbol {
 			case '[':
 				ch = m.read()
 				if ch != ']' {
-					panic(fmt.Sprintf("expected ']', got '%c'", ch))
+					panic(reportf(Position{m.column,m.line}, "expected ']', got '%c'", ch))
 				}
 
 				return m.newSymbol(token.Brackets)
 			default:
-				panic(fmt.Sprintf("invalid character '%c'", ch))
+				panic(reportf(Position{m.column,m.line}, "invalid character '%c'", ch))
 			}
 		} else if util.IsNewLine(ch) && !m.wasNewLine {
 			m.wasNewLine = true
@@ -165,6 +162,13 @@ func (m *Lexer) read() rune {
 	if err != nil {
 		return rune(0)
 	}
+
+	m.column++
+	if util.IsNewLine(ch) {
+		m.column = 0
+		m.line++
+	}
+
 	return ch
 }
 

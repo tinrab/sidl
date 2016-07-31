@@ -13,7 +13,7 @@ type Parser struct {
 
 func (p *Parser) Parse() *ast.Document {
 	p.next = p.lexer.Next()
-	definitions := make([]ast.Node, 0)
+	definitions := make([]ast.Definition, 0)
 
 	for !p.match(token.EOF) {
 		definitions = append(definitions, p.parseDefinition())
@@ -25,21 +25,27 @@ func (p *Parser) Parse() *ast.Document {
 	}
 }
 
-func (p *Parser) parseDefinition() ast.Node {
+func (p *Parser) parseDefinition() ast.Definition {
 	switch p.peek() {
 	case token.KeywordType:
 		return p.parseTypeDefinition()
 	case token.KeywordEnum:
 		return p.parseEnumDefinition()
 	}
+
+	panic(reportf(p.current.Position, "unexpected '%v'", p.next.Lexeme))
 	return nil
 }
 
 func (p *Parser) parseTypeDefinition() *ast.TypeDefinition {
 	p.check(token.KeywordType)
+	p.accept(token.NewLine)
 	name := p.parseIdentifier()
+	p.accept(token.NewLine)
 	p.check(token.OpenBrace)
+	p.accept(token.NewLine)
 	fields := p.parseFieldList()
+	p.accept(token.NewLine)
 	p.check(token.CloseBrace)
 
 	return &ast.TypeDefinition{
@@ -50,9 +56,13 @@ func (p *Parser) parseTypeDefinition() *ast.TypeDefinition {
 
 func (p *Parser) parseEnumDefinition() *ast.EnumDefinition {
 	p.check(token.KeywordEnum)
+	p.accept(token.NewLine)
 	name := p.parseIdentifier()
+	p.accept(token.NewLine)
 	p.check(token.OpenBrace)
+	p.accept(token.NewLine)
 	values := p.parseIdentifierList()
+	p.accept(token.NewLine)
 	p.check(token.CloseBrace)
 
 	return &ast.EnumDefinition{
@@ -105,15 +115,22 @@ func (p *Parser) parseIdentifier() *ast.Identifier {
 	}
 }
 
-func (p *Parser) parseType() ast.Node {
-	if p.peek().IsType() {
+func (p *Parser) parseType() *ast.Type {
+	if p.match(token.Identifier) {
+		return &ast.Type{
+			Name:p.parseIdentifier(),
+			Token:token.Identifier,
+		}
+	} else {
+		if !p.peek().IsType() {
+			panic(reportf(p.current.Position, "expected type, got '%v'", p.next.Token))
+		}
+
 		p.accept(p.peek())
 
 		return &ast.Type{
 			Token:p.current.Token,
 		}
-	} else {
-		return p.parseIdentifier()
 	}
 }
 

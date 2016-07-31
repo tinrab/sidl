@@ -1,7 +1,7 @@
 package ast
 
 type Document struct {
-	Definitions []Node
+	Definitions []Definition
 }
 
 func (n *Document) Accept(visitor Visitor) {

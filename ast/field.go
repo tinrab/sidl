@@ -2,7 +2,7 @@ package ast
 
 type Field struct {
 	Name *Identifier
-	Type Node
+	Type *Type
 }
 
 func (n *Field) Accept(visitor Visitor) {
