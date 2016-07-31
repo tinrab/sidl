@@ -21,8 +21,12 @@ func (v *semanticsAnalyzator) VisitDocument(n *ast.Document) {
 }
 
 func (v *semanticsAnalyzator) VisitTypeDefinition(n *ast.TypeDefinition) {
-	for _, f := range n.Fields {
-		f.Accept(v)
+	if n.OldName != nil {
+		n.OldName.Accept(v)
+	} else {
+		for _, f := range n.Fields {
+			f.Accept(v)
+		}
 	}
 }
 
@@ -34,13 +38,15 @@ func (v *semanticsAnalyzator) VisitField(n *ast.Field) {
 
 func (v *semanticsAnalyzator) VisitType(n *ast.Type) {
 	if n.Token == token.Identifier {
-		if _, ok := v.names[n.Name.Name]; !ok {
-			panic(fmt.Sprintf("type '%s' not defined", n.Name.Name))
-		}
+		n.Name.Accept(v)
 	}
 }
 
-func (v *semanticsAnalyzator) VisitIdentifier(n *ast.Identifier) {}
+func (v *semanticsAnalyzator) VisitIdentifier(n *ast.Identifier) {
+	if _, ok := v.names[n.Name]; !ok {
+		panic(fmt.Sprintf("type '%s' not defined", n.Name))
+	}
+}
 
 func NewSemanticsAnalyzator() *semanticsAnalyzator {
 	return &semanticsAnalyzator{

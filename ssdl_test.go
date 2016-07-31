@@ -84,3 +84,10 @@ func TestDisallowInnerReference(t *testing.T)  {
 	_, err = ParseString("type Item { Name string, Buff []*{} }")
 	assert.EqualError(err, "0:43 expected type, got '{'")
 }
+
+func TestUndefinedOldName(t *testing.T) {
+	assert := assert.New(t)
+	_, err := ParseString("type New Old")
+
+	assert.EqualError(err, "type 'Old' not defined")
+}

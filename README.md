@@ -7,6 +7,8 @@
     <EOF>
     <Definition> <Document>
 <Definition>:
+    type [Identifier] [Identifier]
+    type [Identifier] [Type]
     type [Identifier] { <FieldList> }
     enum [Identifier] { <IdentifierList> }
 <FieldList>:
@@ -19,6 +21,7 @@
     [Identifier]
     [Identifier] <ListDelimiter> <IdentifierList>
 <ListDelimiter>:
+    <space>
     ,
     \n
 ```

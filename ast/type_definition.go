@@ -1,8 +1,10 @@
 package ast
 
 type TypeDefinition struct {
-	Name   *Identifier
-	Fields []*Field
+	Name    *Identifier
+	OldName *Identifier
+	Type    *Type
+	Fields  []*Field
 }
 
 func (n *TypeDefinition) Accept(visitor Visitor) {

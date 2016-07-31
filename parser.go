@@ -39,11 +39,21 @@ func (p *Parser) parseDefinition() ast.Definition {
 func (p *Parser) parseTypeDefinition() *ast.TypeDefinition {
 	p.check(token.KeywordType)
 	name := p.parseIdentifier()
-	fields := p.parseFieldList()
 
+	if p.match(token.Identifier) {
+		return &ast.TypeDefinition{
+			Name:name,
+			OldName:p.parseIdentifier(),
+		}
+	} else if p.peek().IsType() {
+		return &ast.TypeDefinition{
+			Name:name,
+			Type:p.parseType(),
+		}
+	}
 	return &ast.TypeDefinition{
 		Name:name,
-		Fields:fields,
+		Fields:p.parseFieldList(),
 	}
 }
 
