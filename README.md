@@ -33,21 +33,21 @@ enum Quality { Common, Rate, Epic }
 type Item {
 	Name string
 	Quality Quality
-    Cost uint64
+    Cost u64
 	# inner type
 	Buff {
-	    Attribute int
-	    Amount float64
+	    Attribute i
+	    Amount f64
 	}
 }
 
 type Inventory {
-	Capacity int
+	Capacity i
 	Items []*Item # references
 }
 
 type Character {
-	Name string
+	Name s
 	Bag []Item # embedded
 }
 ```
