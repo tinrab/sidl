@@ -3,12 +3,116 @@ package com.moybl.sidl;
 import com.moybl.sidl.ast.*;
 import com.moybl.sidl.semantics.NameChecker;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.commons.cli.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+
+import java.io.*;
+import java.util.*;
 
 public class SimpleIDL {
+
+	public static void main(String[] args) {
+		Option input = new Option("i", "input", true, "input directory");
+		input.setRequired(true);
+		Option output = new Option("o", "output", true, "output directory");
+		output.setRequired(false);
+		Option genOneFile = new Option(null, "gen-onefile", false, "Generate single output file");
+		genOneFile.setRequired(false);
+		Option lang = new Option("l", "lang", true, "Target language");
+		lang.setRequired(true);
+
+		Options options = new Options();
+		options.addOption(input);
+		options.addOption(output);
+		options.addOption(genOneFile);
+		options.addOption(lang);
+
+		CommandLineParser cmdParser = new DefaultParser();
+		HelpFormatter formatter = new HelpFormatter();
+		CommandLine cmd;
+
+		try {
+			cmd = cmdParser.parse(options, args);
+		} catch (ParseException e) {
+			System.err.println(e.getMessage());
+			return;
+		}
+
+		File inputDirectory = new File(cmd.getOptionValue("input"));
+		List<Definition> definitions = new ArrayList<Definition>();
+		Iterator<File> fileIterator = FileUtils.iterateFiles(inputDirectory, null, true);
+
+		while (fileIterator.hasNext()) {
+			File file = fileIterator.next();
+			FileInputStream fis = null;
+
+			try {
+				fis = new FileInputStream(file);
+				Lexer lexer = new Lexer(new BufferedInputStream(fis));
+				Parser parser = new Parser(lexer);
+				definitions.addAll(parser.parse().getDefinitions());
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} finally {
+				if (fis != null) {
+					try {
+						fis.close();
+					} catch (IOException e) {
+					}
+				}
+			}
+		}
+
+		Position p = null;
+
+		if (definitions.size() != 0) {
+			Position a = definitions.get(0).getPosition();
+			Position b = definitions.get(definitions.size() - 1).getPosition();
+			p = Position.expand(a, b);
+		}
+
+		new Document(p, definitions).accept(new NameChecker());
+		Schema s = new Schema();
+		String ns = "";
+
+		for (int i = 0; i < definitions.size(); i++) {
+			Definition d = definitions.get(i);
+
+			if (d instanceof NamespaceDefinition) {
+				ns = ((NamespaceDefinition) d).getDefinedName();
+			} else {
+				s.addDefinition(ns, d);
+			}
+		}
+
+		File outputDirectory = new File(cmd
+				.getOptionValue("output", inputDirectory + File.separator + "sidlgenerated"));
+		write(outputDirectory, s, cmd.getOptionValue("lang"), cmd.hasOption("gen-onefile"));
+	}
+
+	private static void write(File directory, Schema schema, String lang, boolean oneFile) {
+		VelocityEngine ve = new VelocityEngine();
+		ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+		ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
+		ve.init();
+		VelocityContext context = new VelocityContext();
+
+		context.put("name", "Bobby");
+
+		StringWriter sw = new StringWriter();
+		ve.mergeTemplate("templates/" + lang + "/test.vm", "UTF-8", context, sw);
+
+		String s = "Hello, $name";
+		sw = new StringWriter();
+		Velocity.evaluate(context, sw, "sidl", s);
+
+		System.out.println(sw);
+	}
 
 	public static Schema compile(InputStream[] inputStreams) {
 		List<Definition> definitions = new ArrayList<Definition>();
