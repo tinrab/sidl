@@ -1,5 +1,5 @@
-import com.moybl.ssdl.Lexer;
-import com.moybl.ssdl.Token;
+import com.moybl.sidl.Lexer;
+import com.moybl.sidl.Token;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,21 +16,26 @@ public class LexerTokensTest {
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][]{
 				{
-						"type enum // comment",
+						"type enum use namespace // comment",
 						Arrays.asList(
 								Token.KEYWORD_TYPE,
-								Token.KEYWORD_ENUM)
+								Token.KEYWORD_ENUM,
+								Token.KEYWORD_USE,
+								Token.KEYWORD_NAMESPACE)
 				},
 				{
-						", [] {}/*this is a comment*/",
+						", [] {} 0 42/*this is a comment*/",
 						Arrays.asList(
 								Token.COMMA,
-								Token.BRACKETS,
+								Token.OPEN_BRACKET,
+								Token.CLOSE_BRACKET,
 								Token.OPEN_BRACE,
-								Token.CLOSE_BRACE)
+								Token.CLOSE_BRACE,
+								Token.LITERAL_INTEGER,
+								Token.LITERAL_INTEGER)
 				},
 				{
-						"x s i i8 i16 i32 i64 u u8 u16 u32 u64 f32 f64",
+						"x s i i8 i16 i32 i64 u u8 u16 u32 u64 f32 f64 b",
 						Arrays.asList(
 								Token.IDENTIFIER,
 								Token.TYPE_STRING,
@@ -45,7 +50,8 @@ public class LexerTokensTest {
 								Token.TYPE_UINT32,
 								Token.TYPE_UINT64,
 								Token.TYPE_FLOAT32,
-								Token.TYPE_FLOAT64
+								Token.TYPE_FLOAT64,
+								Token.TYPE_BOOL
 						)
 				}
 		});

@@ -1,5 +1,4 @@
-import com.moybl.ssdl.Token;
-import com.moybl.ssdl.ast.*;
+import com.moybl.sidl.ast.*;
 
 public class DebugAstVisitor implements Visitor {
 
@@ -39,34 +38,44 @@ public class DebugAstVisitor implements Visitor {
 		ident--;
 	}
 
-	public void visit(Type node) {
-		StringBuilder sb = new StringBuilder();
+	@Override
+	public void visit(ArrayType node) {
+		String name = null;
 
-		if (node.isList()) {
-			sb.append("[]");
-		}
-
-		if (node.isReference()) {
-			sb.append("*");
-		}
-
-		if (node.isInnerType()) {
-			ident++;
-			for (int i = 0; i < node.getFields().size(); i++) {
-				node.getFields().get(i).accept(this);
-			}
-			ident--;
-		} else if (node.getToken() == Token.IDENTIFIER) {
-			node.getName().accept(this);
+		if (node.getType().getName() != null) {
+			name = node.getType().getName().getName();
 		} else {
-			sb.append(node.getToken().toString());
+			name = node.getType().getToken().toString();
 		}
 
-		System.out.println(sb.toString());
+		print("[%d]%s%s", node.getLength(), node.getType().isReference() ? "*" : "", name);
+	}
+
+	@Override
+	public void visit(ListType node) {
+		String name = null;
+
+		if (node.getType().getName() != null) {
+			name = node.getType().getName().getName();
+		} else {
+			name = node.getType().getToken().toString();
+		}
+
+		print("[]%s%s", node.getType().isReference() ? "*" : "", name);
+
 	}
 
 	public void visit(Identifier node) {
 		print("Identifier(%s)", node.getName());
+	}
+
+	@Override
+	public void visit(EnumValue node) {
+		if (node.getValue() != null) {
+			print("%s = %s", node.getName().getName(), node.getValue());
+		} else {
+			print("%s", node.getName().getName());
+		}
 	}
 
 	private void print(String format, Object... args) {

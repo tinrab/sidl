@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.moybl</groupId>
-    <artifactId>ssdl</artifactId>
+    <artifactId>sidl</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <dependencies>

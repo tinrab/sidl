@@ -1,53 +1,72 @@
-# Simple Schema Definition Language
-[![Build Status](https://travis-ci.org/paidgeek/ssdl.svg?branch=master)](https://travis-ci.org/paidgeek/ssdl)
+# Simple Interface Description Language
+[![Build Status](https://travis-ci.org/paidgeek/sidl.svg?branch=master)](https://travis-ci.org/paidgeek/sidl)
 
 ## Grammar
 ```xml
 <Document>:
-    <EOF>
-    <Definition> <Document>
+	<EOF>
+	<Definition> <Document>
 <Definition>:
-    type [Identifier] [Identifier]
-    type [Identifier] [Type]
-    type [Identifier] { <FieldList> }
-    enum [Identifier] { <IdentifierList> }
+	type [Identifier] [Identifier]
+	type [Identifier] [Type]
+	type [Identifier] { <FieldList> }
+	enum [Identifier] { <EnumList> }
+	enum [Identifier] : <IntType> { <EnumList> }
 <FieldList>:
-    <Field>
-    <Field> <ListDelimiter> <FieldList>
+	<Field>
+	<Field> <ListDelimiter> <FieldList>
 <Field>:
-    [Identifier] [Type]
-    { <FieldList> }
-<IdentifierList>:
-    [Identifier]
-    [Identifier] <ListDelimiter> <IdentifierList>
+	[Identifier] <Type>
+	{ <FieldList> }
+<Type>:
+	[]<Type>
+	[[LITERAL_INTEGER]]<Type>
+	<PrimaryType>
+<PrimaryType>:
+	[Identifier]
+	*[Identifier]
+	s | bool | <IntType>
+<EnumList>:
+	[EnumValue]
+	[EnumValue] <ListDelimiter> <EnumList>
+<EnumValue>:
+	[Identifier]
+	[Identifier] = [LITERAL_INTEGER]
 <ListDelimiter>:
-    <space>
-    ,
-    \n
+	<space>
+	,
+	\n
+<IntType>:
+	i | i8 | i16 | i32 | i64 | u | u8 | u16 | u32 | u64
 ```
 
 ## Example
 ```python
-enum Quality { Common, Rate, Epic }
+use otherns:inner
+
+namespace rpg
+
+enum Quality : uint8 {
+	Common = 0,
+	Rate,
+	Epic
+}
 
 type Item {
-	Name string
+	Name s
 	Quality Quality
-    Cost u64
-	# inner type
-	Buff {
-	    Attribute i
-	    Amount f64
-	}
+	Cost u64
 }
 
 type Inventory {
 	Capacity i
-	Items []*Item # references
+	Items []*Item #references
 }
 
 type Character {
 	Name s
-	Bag []Item # embedded
+	Bag []Item #embedded
+	Attributes [8]f32 #array
 }
+
 ```

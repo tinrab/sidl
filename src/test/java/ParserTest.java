@@ -1,8 +1,10 @@
-import com.moybl.ssdl.*;
-import com.moybl.ssdl.ast.*;
+import com.moybl.sidl.*;
+import com.moybl.sidl.ast.*;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.List;
 
 public class ParserTest {
 
@@ -37,6 +39,25 @@ public class ParserTest {
 		Assert.assertEquals("Quality", ed.getName().getName());
 		Assert.assertEquals("Common", ed.getValues().get(0).getName());
 		Assert.assertEquals("Epic", ed.getValues().get(1).getName());
+	}
+
+	@Test
+	public void testInnerType() {
+		Schema schema = SimpleSchema.parse("type Item { Name s, Buff { Attribute i Amount f64 } }");
+		TypeDefinition td = (TypeDefinition) schema.getDefinitions().get(0);
+
+		Assert.assertEquals("Item", td.getName().getName());
+		Assert.assertEquals("Name", td.getFields().get(0).getName().getName());
+		Assert.assertEquals(Token.TYPE_STRING, td.getFields().get(0).getType().getToken());
+
+		Assert.assertEquals("Buff", td.getFields().get(1).getName().getName());
+		Assert.assertTrue(td.getFields().get(1).getType().isInnerType());
+
+		List<Field> inner = td.getFields().get(1).getType().getFields();
+		Assert.assertEquals("Attribute", inner.get(0).getName().getName());
+		Assert.assertEquals(Token.TYPE_INT, inner.get(0).getType().getToken());
+		Assert.assertEquals("Amount", inner.get(1).getName().getName());
+		Assert.assertEquals(Token.TYPE_FLOAT64, inner.get(1).getType().getToken());
 	}
 
 	@Test
