@@ -20,4 +20,10 @@ public interface Visitor {
 
 	void visit(PrimaryType node);
 
+	void visit(Namespace node);
+
+	void visit(NamespaceDefinition node);
+
+	void visit(Use node);
+
 }

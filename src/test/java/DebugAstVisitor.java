@@ -5,8 +5,8 @@ public class DebugAstVisitor implements Visitor {
 	private int ident;
 
 	public void visit(Schema node) {
-		for (int i = 0; i < node.getDefinitions().size(); i++) {
-			node.getDefinitions().get(i).accept(this);
+		for (int i = 0; i < node.getNodes().size(); i++) {
+			node.getNodes().get(i).accept(this);
 		}
 	}
 
@@ -38,13 +38,11 @@ public class DebugAstVisitor implements Visitor {
 		ident--;
 	}
 
-	@Override
 	public void visit(ArrayType node) {
 		print("[%d]", node.getLength());
 		node.getType().accept(this);
 	}
 
-	@Override
 	public void visit(ListType node) {
 		print("[]");
 		node.getType().accept(this);
@@ -54,7 +52,6 @@ public class DebugAstVisitor implements Visitor {
 		print("Identifier(%s)", node.getName());
 	}
 
-	@Override
 	public void visit(EnumValue node) {
 		if (node.getValue() != null) {
 			print("%s = %s", node.getName().getName(), node.getValue());
@@ -63,7 +60,6 @@ public class DebugAstVisitor implements Visitor {
 		}
 	}
 
-	@Override
 	public void visit(PrimaryType node) {
 		String name = "";
 
@@ -74,6 +70,18 @@ public class DebugAstVisitor implements Visitor {
 		}
 
 		print("%s%s", node.isReference() ? "*" : "", name);
+	}
+
+	public void visit(Namespace node) {
+		print(node.toString());
+	}
+
+	public void visit(NamespaceDefinition node) {
+		print("namespace %s", node.getDefinedName());
+	}
+
+	public void visit(Use node) {
+		print("use %s", node.getNamespace().toString());
 	}
 
 	private void print(String format, Object... args) {

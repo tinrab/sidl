@@ -5,10 +5,15 @@
 ```xml
 <Schema>:
 	<EOF>
+	use <Namespace>
+	namespace <Namespace>
 	<Definition> <Schema>
+<Namespace>:
+	<Identifier> : <Namespace>
+	<Identifier>
 <Definition>:
 	type [Identifier] [Identifier]
-	type [Identifier] [Type]
+	type [Identifier] <Type>
 	type [Identifier] { <FieldList> }
 	enum [Identifier] { <EnumList> }
 	enum [Identifier] : <IntType> { <EnumList> }

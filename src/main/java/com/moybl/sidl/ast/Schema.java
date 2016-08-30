@@ -6,19 +6,19 @@ import java.util.List;
 
 public class Schema extends Node {
 
-	private List<Definition> definitions;
+	private List<Node> nodes;
 
-	public Schema(Position position, List<Definition> definitions) {
+	public Schema(Position position, List<Node> nodes) {
 		super(position);
-		this.definitions = definitions;
+		this.nodes = nodes;
 	}
 
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 	}
 
-	public List<Definition> getDefinitions() {
-		return definitions;
+	public List<Node> getNodes() {
+		return nodes;
 	}
 
 }

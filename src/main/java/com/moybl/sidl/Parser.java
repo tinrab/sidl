@@ -18,26 +18,50 @@ public class Parser {
 	public Schema parse() {
 		next = lexer.next();
 
-		List<Definition> definitions = parseDefinitions();
-		Position p = Position
-				.expand(definitions.get(0).getPosition(), definitions.get(definitions.size() - 1)
-						.getPosition());
-
-		return new Schema(p, definitions);
-	}
-
-	private List<Definition> parseDefinitions() {
-		List<Definition> definitions = new ArrayList<Definition>();
+		List<Node> nodes = new ArrayList<Node>();
+		Position a = next.getPosition();
 
 		while (!match(Token.EOF)) {
-			Definition definition = parseDefinition();
+			if (match(Token.KEYWORD_USE)) {
+				nodes.add(parseUse());
+			} else if (match(Token.KEYWORD_NAMESPACE)) {
+				nodes.add(parseNamespaceDefinition());
+			} else {
+				Definition definition = parseDefinition();
 
-			if (definition != null) {
-				definitions.add(definition);
+				if (definition != null) {
+					nodes.add(definition);
+				}
 			}
 		}
 
-		return definitions;
+		return new Schema(Position.expand(a, current.getPosition()), nodes);
+	}
+
+	private Use parseUse() {
+		check(Token.KEYWORD_USE);
+		Position a = current.getPosition();
+		Namespace namespace = parseNamespace();
+
+		return new Use(Position.expand(a, current.getPosition()), namespace);
+	}
+
+	private NamespaceDefinition parseNamespaceDefinition() {
+		check(Token.KEYWORD_NAMESPACE);
+		Position a = current.getPosition();
+		Namespace namespace = parseNamespace();
+
+		return new NamespaceDefinition(Position.expand(a, current.getPosition()), namespace);
+	}
+
+	private Namespace parseNamespace() {
+		List<Identifier> path = new ArrayList<Identifier>();
+
+		do {
+			path.add(parseIdentifier());
+		} while (accept(Token.COLON));
+
+		return new Namespace(Position.expand(path.get(0).getPosition(), current.getPosition()), path);
 	}
 
 	private Definition parseDefinition() {

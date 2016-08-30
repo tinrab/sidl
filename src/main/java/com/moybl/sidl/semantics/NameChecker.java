@@ -15,13 +15,17 @@ public class NameChecker implements Visitor {
 	}
 
 	public void visit(Schema node) {
-		for (int i = 0; i < node.getDefinitions().size(); i++) {
-			Definition d = node.getDefinitions().get(i);
-			names.put(d.getDefinedName(), d);
+		for (int i = 0; i < node.getNodes().size(); i++) {
+			Node n = node.getNodes().get(i);
+
+			if (n instanceof Definition) {
+				Definition d = (Definition) n;
+				names.put(d.getDefinedName(), d);
+			}
 		}
 
-		for (int i = 0; i < node.getDefinitions().size(); i++) {
-			node.getDefinitions().get(i).accept(this);
+		for (int i = 0; i < node.getNodes().size(); i++) {
+			node.getNodes().get(i).accept(this);
 		}
 	}
 
@@ -52,18 +56,30 @@ public class NameChecker implements Visitor {
 
 	public void visit(Identifier node) {
 		if (!names.containsKey(node.getName())) {
-			throw ParserException.undefined(node);
+			throw ParserException.undefined(node.getPosition(), node.getName());
 		}
 	}
 
-	@Override
 	public void visit(EnumValue node) {
 	}
 
-	@Override
 	public void visit(PrimaryType node) {
 		if (node.getName() != null) {
 			node.getName().accept(this);
+		}
+	}
+
+	public void visit(Namespace node) {
+	}
+
+	public void visit(NamespaceDefinition node) {
+	}
+
+	public void visit(Use node) {
+		String name = node.getNamespace().toString();
+
+		if (!names.containsKey(name)) {
+			throw ParserException.undefined(node.getPosition(), name);
 		}
 	}
 

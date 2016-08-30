@@ -43,9 +43,9 @@ public class ParserException extends RuntimeException {
 		return new ParserException(position, "Illegal left hand side value");
 	}
 
-	public static ParserException undefined(Identifier name) {
-		return new ParserException(name.getPosition(), String
-				.format("'%s' not defined", name.getName()));
+	public static ParserException undefined(Position position, String name) {
+		return new ParserException(position, String
+				.format("'%s' not defined", name));
 	}
 
 }

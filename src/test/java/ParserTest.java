@@ -9,7 +9,7 @@ public class ParserTest {
 	@Test
 	public void testTypeAST() {
 		Schema schema = SimpleIDL.parse("type D{} type F{} type A { B i C []*D, E []F }");
-		TypeDefinition td = (TypeDefinition) schema.getDefinitions().get(2);
+		TypeDefinition td = (TypeDefinition) schema.getNodes().get(2);
 
 		Assert.assertEquals("A", td.getName().getName());
 
@@ -18,28 +18,43 @@ public class ParserTest {
 				.getToken());
 
 		Assert.assertEquals("C", td.getFields().get(1).getName().getName());
-		Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType)td.getFields().get(1).getType()).getType()).getToken());
+		Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType) td.getFields().get(1)
+				.getType()).getType()).getToken());
 		Assert.assertEquals("D", ((PrimaryType) ((ListType) td.getFields().get(1).getType())
 				.getType()).getName().getName());
 		Assert.assertTrue(((PrimaryType) ((ListType) td.getFields().get(1).getType()).getType())
 				.isReference());
 
 		Assert.assertEquals("E", td.getFields().get(2).getName().getName());
-		Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType) td.getFields().get(1).getType()).getType())
+		Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType) td.getFields().get(1)
+				.getType()).getType())
 				.getToken());
 		Assert.assertEquals("F", ((PrimaryType) ((ListType) td.getFields().get(2).getType())
 				.getType()).getName().getName());
-		Assert.assertFalse(((PrimaryType) ((ListType) td.getFields().get(2).getType()).getType()).isReference());
+		Assert.assertFalse(((PrimaryType) ((ListType) td.getFields().get(2).getType()).getType())
+				.isReference());
 	}
 
 	@Test
 	public void testEnumAST() {
 		Schema schema = SimpleIDL.parse("enum Quality { Common, Epic }");
-		EnumDefinition ed = (EnumDefinition) schema.getDefinitions().get(0);
+		EnumDefinition ed = (EnumDefinition) schema.getNodes().get(0);
 
 		Assert.assertEquals("Quality", ed.getName().getName());
 		Assert.assertEquals("Common", ed.getValues().get(0).getName().getName());
 		Assert.assertEquals("Epic", ed.getValues().get(1).getName().getName());
+	}
+
+	@Test
+	public void testArrayType() {
+		Schema schema = SimpleIDL.parse("type A { B [10]b }");
+		TypeDefinition td = (TypeDefinition) schema.getNodes().get(0);
+
+		Assert.assertEquals("A", td.getName().getName());
+		Assert.assertEquals("B", td.getFields().get(0).getName().getName());
+		Assert.assertEquals(10, ((ArrayType) td.getFields().get(0).getType()).getLength());
+		Assert.assertEquals(Token.TYPE_BOOL, ((PrimaryType) ((ArrayType) td.getFields().get(0)
+				.getType()).getType()).getToken());
 	}
 
 	@Test
@@ -71,6 +86,31 @@ public class ParserTest {
 			Position p = e.getPosition();
 			Assert.assertEquals(1, p.getStartLine());
 			Assert.assertEquals(10, p.getStartColumn());
+
+			return;
+		}
+
+		Assert.fail();
+	}
+
+	@Test
+	public void testDefineNamespace() {
+		Schema s = SimpleIDL.parse("namespace A:B:C");
+		NamespaceDefinition nd = (NamespaceDefinition) s.getNodes().get(0);
+
+		Assert.assertEquals("A:B:C", nd.getDefinedName());
+	}
+
+	@Test
+	public void testUseUndefinedNamespace() {
+		try {
+			SimpleIDL.parse("use A:B");
+		} catch (ParserException e) {
+			Assert.assertEquals("'A:B' not defined", e.getMessage());
+
+			Position p = e.getPosition();
+			Assert.assertEquals(1, p.getStartLine());
+			Assert.assertEquals(1, p.getStartColumn());
 
 			return;
 		}
