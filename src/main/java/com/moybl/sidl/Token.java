@@ -14,18 +14,15 @@ public enum Token {
 	CLOSE_BRACKET,
 	KEYWORD_TYPE,
 	KEYWORD_ENUM,
-	KEYWORD_USE,
 	KEYWORD_NAMESPACE,
 	LITERAL_INTEGER,
 
 	TYPE_STRING,
 	TYPE_BOOL,
-	TYPE_INT,
 	TYPE_INT8,
 	TYPE_INT16,
 	TYPE_INT32,
 	TYPE_INT64,
-	TYPE_UINT,
 	TYPE_UINT8,
 	TYPE_UINT16,
 	TYPE_UINT32,
@@ -38,7 +35,7 @@ public enum Token {
 	}
 
 	public boolean isIntegerType() {
-		return ordinal() >= TYPE_INT.ordinal() && ordinal() <= TYPE_UINT64.ordinal();
+		return ordinal() >= TYPE_INT8.ordinal() && ordinal() <= TYPE_UINT64.ordinal();
 	}
 
 	@Override
@@ -68,8 +65,6 @@ public enum Token {
 				return "type";
 			case KEYWORD_ENUM:
 				return "enum";
-			case KEYWORD_USE:
-				return "use";
 			case KEYWORD_NAMESPACE:
 				return "namespace";
 			case LITERAL_INTEGER:
@@ -79,8 +74,6 @@ public enum Token {
 				return "s";
 			case TYPE_BOOL:
 				return "b";
-			case TYPE_INT:
-				return "i";
 			case TYPE_INT8:
 				return "i8";
 			case TYPE_INT16:
@@ -89,8 +82,6 @@ public enum Token {
 				return "i32";
 			case TYPE_INT64:
 				return "i64";
-			case TYPE_UINT:
-				return "u";
 			case TYPE_UINT8:
 				return "u8";
 			case TYPE_UINT16:

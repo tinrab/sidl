@@ -15,12 +15,12 @@ public class Lexer {
 		put("type", Token.KEYWORD_TYPE);
 		put("enum", Token.KEYWORD_ENUM);
 		put("s", Token.TYPE_STRING);
-		put("i", Token.TYPE_INT);
+		put("i", Token.TYPE_INT32);
 		put("i8", Token.TYPE_INT8);
 		put("i16", Token.TYPE_INT16);
 		put("i32", Token.TYPE_INT32);
 		put("i64", Token.TYPE_INT64);
-		put("u", Token.TYPE_UINT);
+		put("u", Token.TYPE_UINT32);
 		put("u8", Token.TYPE_UINT8);
 		put("u16", Token.TYPE_UINT16);
 		put("u32", Token.TYPE_UINT32);
@@ -28,7 +28,6 @@ public class Lexer {
 		put("f32", Token.TYPE_FLOAT32);
 		put("f64", Token.TYPE_FLOAT64);
 		put("b", Token.TYPE_BOOL);
-		put("use", Token.KEYWORD_USE);
 		put("namespace", Token.KEYWORD_NAMESPACE);
 	}};
 	private static final Map<String, Token> PUNCTUATORS = new HashMap<String, Token>() {{

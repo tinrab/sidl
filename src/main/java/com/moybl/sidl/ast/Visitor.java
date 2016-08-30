@@ -2,7 +2,7 @@ package com.moybl.sidl.ast;
 
 public interface Visitor {
 
-	void visit(Schema node);
+	void visit(Document node);
 
 	void visit(TypeDefinition node);
 
@@ -20,10 +20,6 @@ public interface Visitor {
 
 	void visit(PrimaryType node);
 
-	void visit(Namespace node);
-
 	void visit(NamespaceDefinition node);
-
-	void visit(Use node);
 
 }

@@ -38,7 +38,7 @@ public class TypeDefinition extends Definition {
 	}
 
 	public String getDefinedName() {
-		return name.getName();
+		return name.getCanonicalName();
 	}
 
 	public Identifier getOldName() {

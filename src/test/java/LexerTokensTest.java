@@ -16,11 +16,10 @@ public class LexerTokensTest {
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][]{
 				{
-						"type enum use namespace // comment",
+						"type enum namespace // comment",
 						Arrays.asList(
 								Token.KEYWORD_TYPE,
 								Token.KEYWORD_ENUM,
-								Token.KEYWORD_USE,
 								Token.KEYWORD_NAMESPACE)
 				},
 				{
@@ -39,12 +38,12 @@ public class LexerTokensTest {
 						Arrays.asList(
 								Token.IDENTIFIER,
 								Token.TYPE_STRING,
-								Token.TYPE_INT,
+								Token.TYPE_INT32,
 								Token.TYPE_INT8,
 								Token.TYPE_INT16,
 								Token.TYPE_INT32,
 								Token.TYPE_INT64,
-								Token.TYPE_UINT,
+								Token.TYPE_UINT32,
 								Token.TYPE_UINT8,
 								Token.TYPE_UINT16,
 								Token.TYPE_UINT32,

@@ -8,24 +8,23 @@ import java.util.Map;
 
 public class NameChecker implements Visitor {
 
-	private Map<String, Definition> names;
+	private Map<String, Definition> typeNames;
 
 	public NameChecker() {
-		names = new HashMap<String, Definition>();
+		typeNames = new HashMap<String, Definition>();
 	}
 
-	public void visit(Schema node) {
-		for (int i = 0; i < node.getNodes().size(); i++) {
-			Node n = node.getNodes().get(i);
+	public void visit(Document node) {
+		for (int i = 0; i < node.getDefinitions().size(); i++) {
+			Definition d = node.getDefinitions().get(i);
 
-			if (n instanceof Definition) {
-				Definition d = (Definition) n;
-				names.put(d.getDefinedName(), d);
+			if (d instanceof TypeDefinition || d instanceof EnumDefinition) {
+				typeNames.put(d.getDefinedName(), d);
 			}
 		}
 
-		for (int i = 0; i < node.getNodes().size(); i++) {
-			node.getNodes().get(i).accept(this);
+		for (int i = 0; i < node.getDefinitions().size(); i++) {
+			node.getDefinitions().get(i).accept(this);
 		}
 	}
 
@@ -55,8 +54,8 @@ public class NameChecker implements Visitor {
 	}
 
 	public void visit(Identifier node) {
-		if (!names.containsKey(node.getName())) {
-			throw ParserException.undefined(node.getPosition(), node.getName());
+		if (!typeNames.containsKey(node.getCanonicalName())) {
+			throw ParserException.undefined(node.getPosition(), node.getCanonicalName());
 		}
 	}
 
@@ -69,18 +68,7 @@ public class NameChecker implements Visitor {
 		}
 	}
 
-	public void visit(Namespace node) {
-	}
-
 	public void visit(NamespaceDefinition node) {
-	}
-
-	public void visit(Use node) {
-		String name = node.getNamespace().toString();
-
-		if (!names.containsKey(name)) {
-			throw ParserException.undefined(node.getPosition(), name);
-		}
 	}
 
 }

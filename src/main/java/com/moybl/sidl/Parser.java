@@ -11,61 +11,39 @@ public class Parser {
 	private Symbol current;
 	private Symbol next;
 
+	private List<String> currentPath;
+
 	public Parser(Lexer lexer) {
 		this.lexer = lexer;
 	}
 
-	public Schema parse() {
+	public Document parse() {
 		next = lexer.next();
 
-		List<Node> nodes = new ArrayList<Node>();
 		Position a = next.getPosition();
+		List<Definition> definitions = parseDefinitions();
+
+		return new Document(Position.expand(a, current.getPosition()), definitions);
+	}
+
+	private List<Definition> parseDefinitions() {
+		List<Definition> definitions = new ArrayList<Definition>();
 
 		while (!match(Token.EOF)) {
-			if (match(Token.KEYWORD_USE)) {
-				nodes.add(parseUse());
-			} else if (match(Token.KEYWORD_NAMESPACE)) {
-				nodes.add(parseNamespaceDefinition());
-			} else {
-				Definition definition = parseDefinition();
+			Definition definition = parseDefinition();
 
-				if (definition != null) {
-					nodes.add(definition);
-				}
+			if (definition != null) {
+				definitions.add(definition);
 			}
 		}
 
-		return new Schema(Position.expand(a, current.getPosition()), nodes);
-	}
-
-	private Use parseUse() {
-		check(Token.KEYWORD_USE);
-		Position a = current.getPosition();
-		Namespace namespace = parseNamespace();
-
-		return new Use(Position.expand(a, current.getPosition()), namespace);
-	}
-
-	private NamespaceDefinition parseNamespaceDefinition() {
-		check(Token.KEYWORD_NAMESPACE);
-		Position a = current.getPosition();
-		Namespace namespace = parseNamespace();
-
-		return new NamespaceDefinition(Position.expand(a, current.getPosition()), namespace);
-	}
-
-	private Namespace parseNamespace() {
-		List<Identifier> path = new ArrayList<Identifier>();
-
-		do {
-			path.add(parseIdentifier());
-		} while (accept(Token.COLON));
-
-		return new Namespace(Position.expand(path.get(0).getPosition(), current.getPosition()), path);
+		return definitions;
 	}
 
 	private Definition parseDefinition() {
 		switch (next.getToken()) {
+			case KEYWORD_NAMESPACE:
+				return parseNamespaceDefinition();
 			case KEYWORD_TYPE:
 				return parseTypeDefinition();
 			case KEYWORD_ENUM:
@@ -73,6 +51,16 @@ public class Parser {
 		}
 
 		throw ParserException.internal();
+	}
+
+	private NamespaceDefinition parseNamespaceDefinition() {
+		check(Token.KEYWORD_NAMESPACE);
+		Position a = current.getPosition();
+		Identifier name = parseIdentifier();
+
+		currentPath = name.getPath();
+
+		return new NamespaceDefinition(Position.expand(a, current.getPosition()), name);
 	}
 
 	private TypeDefinition parseTypeDefinition() {
@@ -111,13 +99,8 @@ public class Parser {
 		Position a = current.getPosition();
 		Identifier name = parseIdentifier();
 
-		if (accept(Token.COLON)) {
+		if (next.getToken().isIntegerType()) {
 			check(next.getToken());
-
-			if (!current.getToken().isIntegerType()) {
-				throw ParserException.expectedIntegerType(current.getPosition(), current.getToken());
-			}
-
 			type = current.getToken();
 		}
 
@@ -149,9 +132,10 @@ public class Parser {
 	}
 
 	private EnumValue parseEnumValue() {
-		Identifier name = parseIdentifier();
-		Position a = name.getPosition();
-		Position b = name.getPosition();
+		check(Token.IDENTIFIER);
+		String name = current.getLexeme();
+		Position a = current.getPosition();
+		Position b = current.getPosition();
 		String value = null;
 
 		if (accept(Token.EQUALS)) {
@@ -164,10 +148,13 @@ public class Parser {
 	}
 
 	private Field parseField() {
-		Identifier name = parseIdentifier();
+		check(Token.IDENTIFIER);
+		String name = current.getLexeme();
+		Position a = current.getPosition();
+
 		Type type = parseType();
 
-		return new Field(Position.expand(name.getPosition(), type.getPosition()), name, type);
+		return new Field(Position.expand(a, type.getPosition()), name, type);
 	}
 
 	private List<Field> parseFieldList() {
@@ -211,8 +198,8 @@ public class Parser {
 			return new PrimaryType(Position.expand(a, name.getPosition()), name, true);
 		}
 
-		if (match(Token.IDENTIFIER)) {
-			Identifier name = parseIdentifier();
+		if (match(Token.IDENTIFIER) | match(Token.COLON)) {
+			Identifier name = parseAccessIdentifier();
 
 			return new PrimaryType(name.getPosition(), name, false);
 		}
@@ -227,9 +214,47 @@ public class Parser {
 	}
 
 	private Identifier parseIdentifier() {
-		check(Token.IDENTIFIER);
+		Position a = next.getPosition();
+		List<String> path = new ArrayList<String>();
 
-		return new Identifier(current.getPosition(), current.getLexeme());
+		if (currentPath != null) {
+			path.addAll(currentPath);
+		}
+
+		while (accept(Token.IDENTIFIER)) {
+			path.add(current.getLexeme());
+
+			if (!accept(Token.COLON)) {
+				break;
+			}
+		}
+
+		return new Identifier(Position.expand(a, current.getPosition()), path);
+	}
+
+	private Identifier parseAccessIdentifier() {
+		Position a = next.getPosition();
+		List<String> path = new ArrayList<String>();
+
+		if (accept(Token.COLON)) {
+			if (currentPath != null) {
+				path.addAll(currentPath);
+			}
+		}
+
+		while (accept(Token.IDENTIFIER)) {
+			path.add(current.getLexeme());
+
+			if (!accept(Token.COLON)) {
+				break;
+			}
+		}
+
+		if (path.size() == 1 && currentPath != null) {
+			path.addAll(0, currentPath);
+		}
+
+		return new Identifier(Position.expand(a, current.getPosition()), path);
 	}
 
 	private boolean match(Token token) {

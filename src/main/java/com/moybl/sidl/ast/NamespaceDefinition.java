@@ -4,23 +4,23 @@ import com.moybl.sidl.Position;
 
 public class NamespaceDefinition extends Definition {
 
-	private Namespace namespace;
+	private Identifier name;
 
-	public NamespaceDefinition(Position position, Namespace namespace) {
+	public NamespaceDefinition(Position position, Identifier name) {
 		super(position);
-		this.namespace = namespace;
+		this.name = name;
 	}
 
 	public void accept(Visitor visitor) {
 		visitor.visit(this);
 	}
 
-	public Namespace getNamespace() {
-		return namespace;
+	public Identifier getName() {
+		return name;
 	}
 
 	public String getDefinedName() {
-		return namespace.toString();
+		return name.getCanonicalName();
 	}
 
 }

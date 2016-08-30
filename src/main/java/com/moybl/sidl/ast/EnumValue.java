@@ -4,10 +4,10 @@ import com.moybl.sidl.Position;
 
 public class EnumValue extends Node {
 
-	private Identifier name;
+	private String name;
 	private String value;
 
-	public EnumValue(Position position, Identifier name, String value) {
+	public EnumValue(Position position, String name, String value) {
 		super(position);
 		this.name = name;
 		this.value = value;
@@ -18,7 +18,7 @@ public class EnumValue extends Node {
 		visitor.visit(this);
 	}
 
-	public Identifier getName() {
+	public String getName() {
 		return name;
 	}
 

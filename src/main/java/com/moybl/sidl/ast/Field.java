@@ -4,10 +4,10 @@ import com.moybl.sidl.Position;
 
 public class Field extends Node {
 
-	private Identifier name;
+	private String name;
 	private Type type;
 
-	public Field(Position position, Identifier name, Type type) {
+	public Field(Position position, String name, Type type) {
 		super(position);
 		this.name = name;
 		this.type = type;
@@ -17,7 +17,7 @@ public class Field extends Node {
 		visitor.visit(this);
 	}
 
-	public Identifier getName() {
+	public String getName() {
 		return name;
 	}
 

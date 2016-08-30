@@ -8,50 +8,50 @@ public class ParserTest {
 
 	@Test
 	public void testTypeAST() {
-		Schema schema = SimpleIDL.parse("type D{} type F{} type A { B i C []*D, E []F }");
-		TypeDefinition td = (TypeDefinition) schema.getNodes().get(2);
+		Document document = SimpleIDL.parse("type D{} type F{} type A { B i C []*D, E []F }");
+		TypeDefinition td = (TypeDefinition) document.getDefinitions().get(2);
 
-		Assert.assertEquals("A", td.getName().getName());
+		Assert.assertEquals("A", td.getName().getSimpleName());
 
-		Assert.assertEquals("B", td.getFields().get(0).getName().getName());
-		Assert.assertEquals(Token.TYPE_INT, ((PrimaryType) td.getFields().get(0).getType())
+		Assert.assertEquals("B", td.getFields().get(0).getName());
+		Assert.assertEquals(Token.TYPE_INT32, ((PrimaryType) td.getFields().get(0).getType())
 				.getToken());
 
-		Assert.assertEquals("C", td.getFields().get(1).getName().getName());
+		Assert.assertEquals("C", td.getFields().get(1).getName());
 		Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType) td.getFields().get(1)
 				.getType()).getType()).getToken());
 		Assert.assertEquals("D", ((PrimaryType) ((ListType) td.getFields().get(1).getType())
-				.getType()).getName().getName());
+				.getType()).getName().getSimpleName());
 		Assert.assertTrue(((PrimaryType) ((ListType) td.getFields().get(1).getType()).getType())
 				.isReference());
 
-		Assert.assertEquals("E", td.getFields().get(2).getName().getName());
+		Assert.assertEquals("E", td.getFields().get(2).getName());
 		Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType) td.getFields().get(1)
 				.getType()).getType())
 				.getToken());
 		Assert.assertEquals("F", ((PrimaryType) ((ListType) td.getFields().get(2).getType())
-				.getType()).getName().getName());
+				.getType()).getName().getSimpleName());
 		Assert.assertFalse(((PrimaryType) ((ListType) td.getFields().get(2).getType()).getType())
 				.isReference());
 	}
 
 	@Test
 	public void testEnumAST() {
-		Schema schema = SimpleIDL.parse("enum Quality { Common, Epic }");
-		EnumDefinition ed = (EnumDefinition) schema.getNodes().get(0);
+		Document document = SimpleIDL.parse("enum Quality { Common, Epic }");
+		EnumDefinition ed = (EnumDefinition) document.getDefinitions().get(0);
 
-		Assert.assertEquals("Quality", ed.getName().getName());
-		Assert.assertEquals("Common", ed.getValues().get(0).getName().getName());
-		Assert.assertEquals("Epic", ed.getValues().get(1).getName().getName());
+		Assert.assertEquals("Quality", ed.getName().getSimpleName());
+		Assert.assertEquals("Common", ed.getValues().get(0).getName());
+		Assert.assertEquals("Epic", ed.getValues().get(1).getName());
 	}
 
 	@Test
 	public void testArrayType() {
-		Schema schema = SimpleIDL.parse("type A { B [10]b }");
-		TypeDefinition td = (TypeDefinition) schema.getNodes().get(0);
+		Document document = SimpleIDL.parse("type A { B [10]b }");
+		TypeDefinition td = (TypeDefinition) document.getDefinitions().get(0);
 
-		Assert.assertEquals("A", td.getName().getName());
-		Assert.assertEquals("B", td.getFields().get(0).getName().getName());
+		Assert.assertEquals("A", td.getName().getSimpleName());
+		Assert.assertEquals("B", td.getFields().get(0).getName());
 		Assert.assertEquals(10, ((ArrayType) td.getFields().get(0).getType()).getLength());
 		Assert.assertEquals(Token.TYPE_BOOL, ((PrimaryType) ((ArrayType) td.getFields().get(0)
 				.getType()).getType()).getToken());
@@ -95,27 +95,10 @@ public class ParserTest {
 
 	@Test
 	public void testDefineNamespace() {
-		Schema s = SimpleIDL.parse("namespace A:B:C");
-		NamespaceDefinition nd = (NamespaceDefinition) s.getNodes().get(0);
+		Document s = SimpleIDL.parse("namespace A:B:C");
+		NamespaceDefinition nd = (NamespaceDefinition) s.getDefinitions().get(0);
 
 		Assert.assertEquals("A:B:C", nd.getDefinedName());
-	}
-
-	@Test
-	public void testUseUndefinedNamespace() {
-		try {
-			SimpleIDL.parse("use A:B");
-		} catch (ParserException e) {
-			Assert.assertEquals("'A:B' not defined", e.getMessage());
-
-			Position p = e.getPosition();
-			Assert.assertEquals(1, p.getStartLine());
-			Assert.assertEquals(1, p.getStartColumn());
-
-			return;
-		}
-
-		Assert.fail();
 	}
 
 }

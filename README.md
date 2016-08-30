@@ -3,11 +3,10 @@
 
 ## Grammar
 ```xml
-<Schema>:
+<Document>:
 	<EOF>
-	use <Namespace>
 	namespace <Namespace>
-	<Definition> <Schema>
+	<Definition> <Document>
 <Namespace>:
 	<Identifier> : <Namespace>
 	<Identifier>
@@ -16,7 +15,7 @@
 	type [Identifier] <Type>
 	type [Identifier] { <FieldList> }
 	enum [Identifier] { <EnumList> }
-	enum [Identifier] : <IntType> { <EnumList> }
+	enum [Identifier] <IntType> { <EnumList> }
 <FieldList>:
 	<Field>
 	<Field> <ListDelimiter> <FieldList>
@@ -46,16 +45,21 @@
 ```
 
 ## Example
-```python
-use otherns:inner
+```
+namespace RPG
 
-namespace rpg
-
-enum Quality : uint8 {
-	Common = 0,
-	Rate,
-	Epic
+type Character {
+	Name s
+	Speed f32
+	Bag :Inventory:Inventory
+	MainHand RPG:Inventory:Item
+	Buffs [8]f64
 }
+
+
+namespace RPG:Inventory
+
+enum Quality u8 { Common = 0, Rare, Epic }
 
 type Item {
 	Name s
@@ -64,14 +68,7 @@ type Item {
 }
 
 type Inventory {
-	Capacity i
-	Items []*Item #references
+	Capacity u
+	Items []*Item
 }
-
-type Character {
-	Name s
-	Bag []Item #embedded
-	Attributes [8]f32 #array
-}
-
 ```

@@ -26,7 +26,7 @@ public class EnumDefinition extends Definition {
 	}
 
 	public String getDefinedName() {
-		return name.getName();
+		return name.getCanonicalName();
 	}
 
 	public Token getType() {
