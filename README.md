@@ -3,9 +3,9 @@
 
 ## Grammar
 ```xml
-<Document>:
+<Schema>:
 	<EOF>
-	<Definition> <Document>
+	<Definition> <Schema>
 <Definition>:
 	type [Identifier] [Identifier]
 	type [Identifier] [Type]

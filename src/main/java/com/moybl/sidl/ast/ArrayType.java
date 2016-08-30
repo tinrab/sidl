@@ -5,9 +5,9 @@ import com.moybl.sidl.Position;
 public class ArrayType extends Type {
 
 	private int length;
-	private BaseType type;
+	private Type type;
 
-	public ArrayType(Position position, int length, BaseType type) {
+	public ArrayType(Position position, int length, Type type) {
 		super(position);
 		this.length = length;
 		this.type = type;
@@ -26,7 +26,7 @@ public class ArrayType extends Type {
 		return length;
 	}
 
-	public BaseType getType() {
+	public Type getType() {
 		return type;
 	}
 

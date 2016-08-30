@@ -40,29 +40,14 @@ public class DebugAstVisitor implements Visitor {
 
 	@Override
 	public void visit(ArrayType node) {
-		String name = null;
-
-		if (node.getType().getName() != null) {
-			name = node.getType().getName().getName();
-		} else {
-			name = node.getType().getToken().toString();
-		}
-
-		print("[%d]%s%s", node.getLength(), node.getType().isReference() ? "*" : "", name);
+		print("[%d]", node.getLength());
+		node.getType().accept(this);
 	}
 
 	@Override
 	public void visit(ListType node) {
-		String name = null;
-
-		if (node.getType().getName() != null) {
-			name = node.getType().getName().getName();
-		} else {
-			name = node.getType().getToken().toString();
-		}
-
-		print("[]%s%s", node.getType().isReference() ? "*" : "", name);
-
+		print("[]");
+		node.getType().accept(this);
 	}
 
 	public void visit(Identifier node) {
@@ -76,6 +61,19 @@ public class DebugAstVisitor implements Visitor {
 		} else {
 			print("%s", node.getName().getName());
 		}
+	}
+
+	@Override
+	public void visit(PrimaryType node) {
+		String name = "";
+
+		if (node.getName() != null) {
+			name = node.getName().getName();
+		} else {
+			name = node.getToken().toString();
+		}
+
+		print("%s%s", node.isReference() ? "*" : "", name);
 	}
 
 	private void print(String format, Object... args) {

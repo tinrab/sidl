@@ -61,7 +61,7 @@ public class Parser {
 
 			return new TypeDefinition(Position.expand(a, oldName.getPosition()), name, oldName);
 		} else if (next.getToken().isType()) {
-			BaseType type = parseType();
+			Type type = parseType();
 
 			return new TypeDefinition(Position.expand(a, type.getPosition()), name, type);
 		}
@@ -168,41 +168,38 @@ public class Parser {
 				int length = Integer.parseInt(current.getLexeme());
 				check(Token.CLOSE_BRACKET);
 
-				BaseType type = null;
-				boolean isReference = accept(Token.ASTERISK);
-
-				if(match(Token.IDENTIFIER)){
-					type = new BaseType(parseIdentifier(), isReference);
-				} else {
-					check(next.getToken());
-					type = new BaseType(current.getToken(), isReference);
-				}
-
-				return new ArrayType(Position.expand(a, current.getPosition()), length, type);
+				return new ArrayType(Position.expand(a, current.getPosition()), length, parseType());
 			} else {
 				check(Token.CLOSE_BRACKET);
-			}
-		} else {
 
+				return new ListType(Position.expand(a, current.getPosition()), parseType());
+			}
 		}
+
+		return parsePrimaryType();
 	}
 
-	private BaseType parsePrimaryType() {
+	private PrimaryType parsePrimaryType() {
+		if (accept(Token.ASTERISK)) {
+			Position a = current.getPosition();
+			Identifier name = parseIdentifier();
+
+			return new PrimaryType(Position.expand(a, name.getPosition()), name, true);
+		}
+
 		if (match(Token.IDENTIFIER)) {
 			Identifier name = parseIdentifier();
-			Position b = name.getPosition();
 
-			return new BaseType(Position.expand(a, b), name);
-		} else {
-			if (!next.getToken().isType()) {
-				throw ParserException.expectedType(current.getPosition(), next.getToken());
-			}
-
-			accept(next.getToken());
-			Position b = current.getPosition();
-
-			return new BaseType(Position.expand(a, b), current.getToken());
+			return new PrimaryType(name.getPosition(), name, false);
 		}
+
+		if (!next.getToken().isType()) {
+			throw ParserException.expectedType(next.getPosition(), next.getToken());
+		}
+
+		check(next.getToken());
+
+		return new PrimaryType(current.getPosition(), current.getToken(), false);
 	}
 
 	private Identifier parseIdentifier() {

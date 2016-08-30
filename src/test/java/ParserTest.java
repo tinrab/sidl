@@ -4,66 +4,48 @@ import com.moybl.sidl.ast.*;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.List;
-
 public class ParserTest {
 
 	@Test
 	public void testTypeAST() {
-		Schema schema = SimpleSchema.parse("type D{} type F{} type A { B i C []*D, E []F }");
+		Schema schema = SimpleIDL.parse("type D{} type F{} type A { B i C []*D, E []F }");
 		TypeDefinition td = (TypeDefinition) schema.getDefinitions().get(2);
 
 		Assert.assertEquals("A", td.getName().getName());
 
 		Assert.assertEquals("B", td.getFields().get(0).getName().getName());
-		Assert.assertEquals(Token.TYPE_INT, td.getFields().get(0).getType().getToken());
+		Assert.assertEquals(Token.TYPE_INT, ((PrimaryType) td.getFields().get(0).getType())
+				.getToken());
 
 		Assert.assertEquals("C", td.getFields().get(1).getName().getName());
-		Assert.assertEquals(Token.IDENTIFIER, td.getFields().get(1).getType().getToken());
-		Assert.assertEquals("D", td.getFields().get(1).getType().getName().getName());
-		Assert.assertTrue(td.getFields().get(1).getType().isList());
-		Assert.assertTrue(td.getFields().get(1).getType().isReference());
+		Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType)td.getFields().get(1).getType()).getType()).getToken());
+		Assert.assertEquals("D", ((PrimaryType) ((ListType) td.getFields().get(1).getType())
+				.getType()).getName().getName());
+		Assert.assertTrue(((PrimaryType) ((ListType) td.getFields().get(1).getType()).getType())
+				.isReference());
 
 		Assert.assertEquals("E", td.getFields().get(2).getName().getName());
-		Assert.assertEquals(Token.IDENTIFIER, td.getFields().get(1).getType().getToken());
-		Assert.assertEquals("F", td.getFields().get(2).getType().getName().getName());
-		Assert.assertTrue(td.getFields().get(2).getType().isList());
-		Assert.assertFalse(td.getFields().get(2).getType().isReference());
+		Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType) td.getFields().get(1).getType()).getType())
+				.getToken());
+		Assert.assertEquals("F", ((PrimaryType) ((ListType) td.getFields().get(2).getType())
+				.getType()).getName().getName());
+		Assert.assertFalse(((PrimaryType) ((ListType) td.getFields().get(2).getType()).getType()).isReference());
 	}
 
 	@Test
 	public void testEnumAST() {
-		Schema schema = SimpleSchema.parse("enum Quality { Common, Epic }");
+		Schema schema = SimpleIDL.parse("enum Quality { Common, Epic }");
 		EnumDefinition ed = (EnumDefinition) schema.getDefinitions().get(0);
 
 		Assert.assertEquals("Quality", ed.getName().getName());
-		Assert.assertEquals("Common", ed.getValues().get(0).getName());
-		Assert.assertEquals("Epic", ed.getValues().get(1).getName());
-	}
-
-	@Test
-	public void testInnerType() {
-		Schema schema = SimpleSchema.parse("type Item { Name s, Buff { Attribute i Amount f64 } }");
-		TypeDefinition td = (TypeDefinition) schema.getDefinitions().get(0);
-
-		Assert.assertEquals("Item", td.getName().getName());
-		Assert.assertEquals("Name", td.getFields().get(0).getName().getName());
-		Assert.assertEquals(Token.TYPE_STRING, td.getFields().get(0).getType().getToken());
-
-		Assert.assertEquals("Buff", td.getFields().get(1).getName().getName());
-		Assert.assertTrue(td.getFields().get(1).getType().isInnerType());
-
-		List<Field> inner = td.getFields().get(1).getType().getFields();
-		Assert.assertEquals("Attribute", inner.get(0).getName().getName());
-		Assert.assertEquals(Token.TYPE_INT, inner.get(0).getType().getToken());
-		Assert.assertEquals("Amount", inner.get(1).getName().getName());
-		Assert.assertEquals(Token.TYPE_FLOAT64, inner.get(1).getType().getToken());
+		Assert.assertEquals("Common", ed.getValues().get(0).getName().getName());
+		Assert.assertEquals("Epic", ed.getValues().get(1).getName().getName());
 	}
 
 	@Test
 	public void testUndefined() {
 		try {
-			SimpleSchema.parse("type Item { Quality Quality }");
+			SimpleIDL.parse("type Item { Quality Quality }");
 		} catch (ParserException e) {
 			Assert.assertEquals("'Quality' not defined", e.getMessage());
 
@@ -80,28 +62,9 @@ public class ParserTest {
 	}
 
 	@Test
-	public void testDisallowInnerReference() {
-		SimpleSchema.parse("type Item { Name s, Buff []{} }");
-
-		try {
-			SimpleSchema.parse("type Item { Name s, Buff []*{} }");
-		} catch (ParserException e) {
-			Assert.assertEquals("Expected type, got '{'", e.getMessage());
-
-			Position p = e.getPosition();
-			Assert.assertEquals(1, p.getStartLine());
-			Assert.assertEquals(31, p.getStartColumn());
-
-			return;
-		}
-
-		Assert.fail();
-	}
-
-	@Test
 	public void testUndefinedOldName() {
 		try {
-			SimpleSchema.parse("type New Old");
+			SimpleIDL.parse("type New Old");
 		} catch (ParserException e) {
 			Assert.assertEquals("'Old' not defined", e.getMessage());
 

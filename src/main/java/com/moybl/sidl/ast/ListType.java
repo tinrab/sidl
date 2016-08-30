@@ -4,9 +4,9 @@ import com.moybl.sidl.Position;
 
 public class ListType extends Type {
 
-	private BaseType type;
+	private Type type;
 
-	public ListType(Position position, BaseType type) {
+	public ListType(Position position, Type type) {
 		super(position);
 		this.type = type;
 	}
@@ -16,7 +16,7 @@ public class ListType extends Type {
 		visitor.visit(this);
 	}
 
-	public BaseType getType() {
+	public Type getType() {
 		return type;
 	}
 

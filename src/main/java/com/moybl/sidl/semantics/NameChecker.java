@@ -1,7 +1,6 @@
 package com.moybl.sidl.semantics;
 
 import com.moybl.sidl.ParserException;
-import com.moybl.sidl.Token;
 import com.moybl.sidl.ast.*;
 
 import java.util.HashMap;
@@ -44,19 +43,11 @@ public class NameChecker implements Visitor {
 	}
 
 	public void visit(ArrayType node) {
-		if (node.getType().getName() != null) {
-			if (!names.containsKey(node.getType().getName().getName())) {
-				throw ParserException.undefined(node.getType().getName());
-			}
-		}
+		node.getType().accept(this);
 	}
 
 	public void visit(ListType node) {
-		if (node.getType().getName() != null) {
-			if (!names.containsKey(node.getType().getName().getName())) {
-				throw ParserException.undefined(node.getType().getName());
-			}
-		}
+		node.getType().accept(this);
 	}
 
 	public void visit(Identifier node) {
@@ -67,6 +58,13 @@ public class NameChecker implements Visitor {
 
 	@Override
 	public void visit(EnumValue node) {
+	}
+
+	@Override
+	public void visit(PrimaryType node) {
+		if (node.getName() != null) {
+			node.getName().accept(this);
+		}
 	}
 
 }

@@ -18,4 +18,6 @@ public interface Visitor {
 
 	void visit(EnumValue node);
 
+	void visit(PrimaryType node);
+
 }

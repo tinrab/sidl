@@ -1,12 +1,12 @@
-package com.moybl.ssdl;
+package com.moybl.sidl;
 
-import com.moybl.ssdl.ast.Schema;
-import com.moybl.ssdl.semantics.NameChecker;
+import com.moybl.sidl.ast.Schema;
+import com.moybl.sidl.semantics.NameChecker;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-public class SimpleSchema {
+public class SimpleIDL {
 
 	public static Schema parse(InputStream inputStream) {
 		Lexer lexer = new Lexer(inputStream);

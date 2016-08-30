@@ -8,7 +8,7 @@ public class TypeDefinition extends Definition {
 
 	private Identifier name;
 	private Identifier oldName;
-	private BaseType type;
+	private Type type;
 	private List<Field> fields;
 
 	public TypeDefinition(Position position, Identifier name, Identifier oldName) {
@@ -17,7 +17,7 @@ public class TypeDefinition extends Definition {
 		this.oldName = oldName;
 	}
 
-	public TypeDefinition(Position position, Identifier name, BaseType type) {
+	public TypeDefinition(Position position, Identifier name, Type type) {
 		super(position);
 		this.name = name;
 		this.type = type;
@@ -45,7 +45,7 @@ public class TypeDefinition extends Definition {
 		return oldName;
 	}
 
-	public BaseType getType() {
+	public Type getType() {
 		return type;
 	}
 
