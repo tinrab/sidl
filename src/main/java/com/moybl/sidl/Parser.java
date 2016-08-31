@@ -93,7 +93,7 @@ public class Parser {
 
 	private EnumDefinition parseEnumDefinition() {
 		Position b = null;
-		Token type = null;
+		Token type = Token.TYPE_UINT8;
 
 		check(Token.KEYWORD_ENUM);
 		Position a = current.getPosition();
@@ -121,8 +121,25 @@ public class Parser {
 		check(Token.OPEN_BRACE);
 		List<EnumValue> values = new ArrayList<EnumValue>();
 
+		long next = 0;
+
 		while (match(Token.IDENTIFIER)) {
-			values.add(parseEnumValue());
+			EnumValue ev = parseEnumValue();
+
+			if (ev.getValue() == null) {
+				ev.setValue(next + "");
+				next++;
+			} else {
+				long val = Long.parseLong(ev.getValue());
+
+				if (next != 0 && val <= next) {
+					throw ParserException.enumInvalidOrder(ev.getPosition());
+				}
+
+				next = val + 1;
+			}
+
+			values.add(ev);
 			accept(Token.COMMA);
 		}
 

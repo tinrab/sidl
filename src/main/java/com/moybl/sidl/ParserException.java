@@ -1,7 +1,5 @@
 package com.moybl.sidl;
 
-import com.moybl.sidl.ast.Identifier;
-
 public class ParserException extends RuntimeException {
 
 	private Position position;
@@ -46,6 +44,10 @@ public class ParserException extends RuntimeException {
 	public static ParserException undefined(Position position, String name) {
 		return new ParserException(position, String
 				.format("'%s' not defined", name));
+	}
+
+	public static ParserException enumInvalidOrder(Position position) {
+		return new ParserException(position, "Enum values must be specified in ascending order");
 	}
 
 }

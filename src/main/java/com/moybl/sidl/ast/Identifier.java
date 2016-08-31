@@ -2,7 +2,6 @@ package com.moybl.sidl.ast;
 
 import com.moybl.sidl.Position;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Identifier extends Node {

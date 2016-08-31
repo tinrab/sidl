@@ -1,0 +1,27 @@
+#set($types = {
+	"i8": "byte",
+	"i16": "short",
+	"i32": "int",
+	"i64": "long",
+	"u8": "byte",
+	"u16": "short",
+	"u32": "int",
+	"u64": "long"
+})
+#set($classTypes = {
+	"i8": "Byte",
+	"i16": "Short",
+	"i32": "Integer",
+	"i64": "Long",
+	"u8": "Byte",
+	"u16": "Short",
+	"u32": "Integer",
+	"u64": "Long"
+})
+#set($name = $definition.name.simpleName)
+@SuppressWarnings("unused")
+public final class $name {
+#foreach($field in $definition.fields)
+	$field.name
+#end
+}

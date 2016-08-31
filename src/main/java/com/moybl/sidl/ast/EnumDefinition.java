@@ -14,6 +14,7 @@ public class EnumDefinition extends Definition {
 	public EnumDefinition(Position position, Identifier name, Token type, List<EnumValue> values) {
 		super(position);
 		this.name = name;
+		this.type = type;
 		this.values = values;
 	}
 

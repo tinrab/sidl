@@ -1,0 +1,37 @@
+#set($types = {
+	"i8": "byte",
+	"i16": "short",
+	"i32": "int",
+	"i64": "long",
+	"u8": "byte",
+	"u16": "short",
+	"u32": "int",
+	"u64": "long"
+})
+#set($classTypes = {
+	"i8": "Byte",
+	"i16": "Short",
+	"i32": "Integer",
+	"i64": "Long",
+	"u8": "Byte",
+	"u16": "Short",
+	"u32": "Integer",
+	"u64": "Long"
+})
+#set($name = $definition.name.simpleName)
+#set($type = $types.get($definition.type.toString()))
+#set($classType = $classTypes.get($definition.type.toString()))
+public final class $name {
+	private $name() { }
+#foreach($value in $definition.values)
+	public static $type $value.name = $value.value;
+#end
+	public static final Map<$classType, String> names = new HashMap<$classType, String>() {{
+#foreach($value in $definition.values)
+		put($value.value, "$value.name");
+#end
+	}};
+	public static String getName($type value) {
+		return names.get(value);
+	}
+}

@@ -1,6 +1,6 @@
 namespace RPG:Inventory
 
-enum Quality u8 { Common = 0, Rare, Epic }
+enum Quality u8 { Common = 1, Rare, Epic }
 
 type Item {
 	Name s

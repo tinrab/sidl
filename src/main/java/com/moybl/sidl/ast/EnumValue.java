@@ -26,4 +26,8 @@ public class EnumValue extends Node {
 		return value;
 	}
 
+	public void setValue(String value) {
+		this.value = value;
+	}
+
 }

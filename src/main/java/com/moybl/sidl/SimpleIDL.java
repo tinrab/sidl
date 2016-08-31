@@ -5,8 +5,8 @@ import com.moybl.sidl.semantics.NameChecker;
 
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
@@ -76,7 +76,9 @@ public class SimpleIDL {
 			p = Position.expand(a, b);
 		}
 
-		new Document(p, definitions).accept(new NameChecker());
+		Document document = new Document(p, definitions);
+		document.accept(new NameChecker());
+
 		Schema s = new Schema();
 		String ns = "";
 
@@ -100,16 +102,28 @@ public class SimpleIDL {
 		ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
 		ve.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
 		ve.init();
-		VelocityContext context = new VelocityContext();
-
-		context.put("name", "Bobby");
 
 		StringWriter sw = new StringWriter();
-		ve.mergeTemplate("templates/" + lang + "/test.vm", "UTF-8", context, sw);
 
-		String s = "Hello, $name";
-		sw = new StringWriter();
-		Velocity.evaluate(context, sw, "sidl", s);
+		for (int i = 0; i < schema.getNamespaces().size(); i++) {
+			String namespace = schema.getNamespaces().get(i);
+			List<Definition> definitions = schema.getDefinitions(namespace);
+
+			for (int j = 0; j < definitions.size(); j++) {
+				Definition d = definitions.get(j);
+				Template t = null;
+				VelocityContext context = new VelocityContext();
+				context.put("definition", d);
+
+				if (d instanceof EnumDefinition) {
+					t = ve.getTemplate(lang + "/enum.vm");
+				} else {
+					t = ve.getTemplate(lang + "/type.vm");
+				}
+
+				t.merge(context, sw);
+			}
+		}
 
 		System.out.println(sw);
 	}
