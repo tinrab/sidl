@@ -8,6 +8,8 @@ public abstract class Definition extends Node {
 		super(position);
 	}
 
+	public abstract Identifier getName();
+
 	public abstract String getDefinedName();
 
 }

@@ -41,6 +41,15 @@
 #end
 $pkg
 #end
+#macro(getPackage $path)
+	#set($pkg = "")
+	#foreach($n in $path)
+		#if($velocityHasNext)
+			#set($pkg = $pkg + "." + $n.toLowerCase())
+		#end
+	#end
+	$pkg
+#end
 #macro(getTypeName $type)
 	#if($type.class.simpleName == "ArrayType")
 		#set ($tmp = "#getTypeName($type.type)")
@@ -64,6 +73,15 @@ $pkg
 		$classTypes.get($type.token.toString())##
 	#end
 #end
+#if(!$isOneFile)
+#set($pkg = "#getPackage($path)")
+#set($pkg = $pkg.trim())
+#if($pkg != "")
+package $pkg;
+#end
+import java.io.*;
+#end
+
 @SuppressWarnings("unused")
 public final class $name {
 ## Fields
@@ -96,7 +114,7 @@ $typeName $camelCase#if($velocityHasNext), #end#end) {
 	#set($typeName = $typeName.trim())
 	#set($camelCase = $utils.toCamelCase($field.name))
 	public $typeName get${field.name}() {
-		return $field.name;
+		return $camelCase;
 	}
 	public void set${field.name}($typeName $camelCase) {
 		this.$camelCase = $camelCase;
@@ -137,9 +155,27 @@ $typeName $camelCase#if($velocityHasNext), #end#end) {
 		this.$camelCase = false;
 #elseif($field.type.token.toString() == "IDENTIFIER")
 		this.$camelCase = null;
+#elseif($field.type.token.toString() == "f32")
+		this.$camelCase = 0.0f;
+#elseif($field.type.token.toString() == "f64")
+		this.$camelCase = 0.0;
 #else
 		this.$camelCase = 0;
 #end
 #end
+	}
+## WriteTo
+	public void writeTo(OutputStream os) throws IOException {
+
+	}
+	private void writeObject(ObjectOutputStream oos) throws IOException {
+		writeTo(oos);
+	}
+## ReadFrom
+	public void readFrom(InputStream is) throws IOException {
+
+	}
+	private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+		readFrom(ois);
 	}
 }

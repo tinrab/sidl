@@ -116,6 +116,8 @@ public class SimpleIDL {
 				VelocityContext context = new VelocityContext();
 				context.put("definition", d);
 				context.put("utils", utils);
+				context.put("isOneFile", oneFile);
+				context.put("path", d.getName().getPath());
 
 				if (d instanceof EnumDefinition) {
 					t = ve.getTemplate(lang + "/enum.vm");
