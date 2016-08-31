@@ -1,4 +1,8 @@
 #set($types = {
+	"s": "String",
+	"b":"boolean",
+	"f32":"float",
+	"f64":"double",
 	"i8": "byte",
 	"i16": "short",
 	"i32": "int",
@@ -9,6 +13,10 @@
 	"u64": "long"
 })
 #set($classTypes = {
+	"s": "String",
+	"b":"Boolean",
+	"f32":"Float",
+	"f64":"Double",
 	"i8": "Byte",
 	"i16": "Short",
 	"i32": "Integer",
@@ -19,9 +27,119 @@
 	"u64": "Long"
 })
 #set($name = $definition.name.simpleName)
+#macro(getPackagePath $path)
+#set($pkg = "")
+#foreach($n in $path)
+	#if($velocityHasNext)
+		#set($n = $n.toLowerCase())
+	#end
+	#if($pkg == "")
+		#set($pkg = $n)
+	#else
+		#set($pkg = $pkg + "." + $n)
+	#end
+#end
+$pkg
+#end
+#macro(getTypeName $type)
+	#if($type.class.simpleName == "ArrayType")
+		#set ($tmp = "#getTypeName($type.type)")
+		${tmp.replaceAll(" +", "").trim()}[]
+	#elseif($type.class.simpleName == "ListType")
+		#set ($tmp = "#getTypeName($type.type)")
+		java.util.List<${tmp.replaceAll(" +", "").trim()}>
+	#elseif($type.class.simpleName == "PrimaryType")
+		#if($type.name)
+			#getPackagePath($type.name.path)##
+		#else
+			$classTypes.get($type.token.toString())##
+		#end
+	#end
+#end
+#macro(getBaseType $type)
+	#set($type = $type.type)
+	#if($type.name)
+		#getPackagePath($type.name.path)##
+	#else
+		$classTypes.get($type.token.toString())##
+	#end
+#end
 @SuppressWarnings("unused")
 public final class $name {
+## Fields
 #foreach($field in $definition.fields)
-	$field.name
+#set ($typeName = "#getTypeName($field.type)")
+	private ${typeName.trim()} $utils.toCamelCase($field.name);
+#if($field.type.class.simpleName == "ArrayType")
+	public static final int $utils.toUpperCase($field.name)_LENGTH = $field.type.length;
 #end
+#end
+## Constructor
+	public $name() {
+		reset();
+	}
+	public $name(#foreach($field in $definition.fields)##
+	#set($typeName = "#getTypeName($field.type)")##
+	#set($typeName = $typeName.trim())##
+	#set($camelCase = $utils.toCamelCase($field.name))##
+$typeName $camelCase#if($velocityHasNext), #end#end) {
+#foreach($field in $definition.fields)
+	#set($typeName = "#getTypeName($field.type)")
+	#set($typeName = $typeName.trim())
+	#set($camelCase = $utils.toCamelCase($field.name))
+		this.$camelCase = $camelCase;
+#end
+	}
+## Getters and setters
+#foreach($field in $definition.fields)
+	#set($typeName = "#getTypeName($field.type)")
+	#set($typeName = $typeName.trim())
+	#set($camelCase = $utils.toCamelCase($field.name))
+	public $typeName get${field.name}() {
+		return $field.name;
+	}
+	public void set${field.name}($typeName $camelCase) {
+		this.$camelCase = $camelCase;
+	}
+#if($field.type.class.simpleName == "ArrayType")
+	#set($baseType = "#getBaseType($field.type)")
+	#set($baseType = $baseType.trim())
+	public $baseType get${field.name}At(int index) {
+		return this.${camelCase}[index];
+	}
+	public void set${field.name}At(int index, $baseType value) {
+		this.${camelCase}[index] = value;
+	}
+#elseif($field.type.class.simpleName == "ListType")
+	#set($baseType = "#getBaseType($field.type)")
+	#set($baseType = $baseType.trim())
+	public $baseType get${field.name}At(int index) {
+		return this.${camelCase}.get(index);
+	}
+	public void set${field.name}At(int index, $baseType value) {
+		this.${camelCase}.set(index, value);
+	}
+#end
+#end
+## Reset
+	public void reset() {
+#foreach($field in $definition.fields)
+	#set($baseType = "#getBaseType($field.type)")
+	#set($baseType = $baseType.trim())
+	#set($camelCase = $utils.toCamelCase($field.name))
+#if($field.type.class.simpleName == "ArrayType")
+		this.$camelCase = new ${baseType}[$utils.toUpperCase($field.name)_LENGTH];
+#elseif($field.type.class.simpleName == "ListType")
+		this.$camelCase = new ArrayList<$baseType>();
+#elseif($field.type.token.toString() == "s")
+		this.$camelCase = "";
+#elseif($field.type.token.toString() == "b")
+		this.$camelCase = false;
+#elseif($field.type.token.toString() == "IDENTIFIER")
+		this.$camelCase = null;
+#else
+		this.$camelCase = 0;
+#end
+#end
+	}
 }

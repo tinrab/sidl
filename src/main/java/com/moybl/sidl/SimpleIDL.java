@@ -104,6 +104,7 @@ public class SimpleIDL {
 		ve.init();
 
 		StringWriter sw = new StringWriter();
+		SchemaUtils utils = new SchemaUtils();
 
 		for (int i = 0; i < schema.getNamespaces().size(); i++) {
 			String namespace = schema.getNamespaces().get(i);
@@ -114,6 +115,7 @@ public class SimpleIDL {
 				Template t = null;
 				VelocityContext context = new VelocityContext();
 				context.put("definition", d);
+				context.put("utils", utils);
 
 				if (d instanceof EnumDefinition) {
 					t = ve.getTemplate(lang + "/enum.vm");

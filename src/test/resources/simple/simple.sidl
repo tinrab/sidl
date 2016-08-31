@@ -1,0 +1,10 @@
+type Item {
+	Name s
+}
+type Simple {
+	Item Item
+	Name s
+	Value f64
+	Arr [10]i
+	Li []u
+}

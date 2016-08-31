@@ -196,11 +196,11 @@ public class Parser {
 				int length = Integer.parseInt(current.getLexeme());
 				check(Token.CLOSE_BRACKET);
 
-				return new ArrayType(Position.expand(a, current.getPosition()), length, parseType());
+				return new ArrayType(Position.expand(a, current.getPosition()), length, parsePrimaryType());
 			} else {
 				check(Token.CLOSE_BRACKET);
 
-				return new ListType(Position.expand(a, current.getPosition()), parseType());
+				return new ListType(Position.expand(a, current.getPosition()), parsePrimaryType());
 			}
 		}
 

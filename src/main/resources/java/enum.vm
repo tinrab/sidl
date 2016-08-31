@@ -24,7 +24,7 @@
 public final class $name {
 	private $name() { }
 #foreach($value in $definition.values)
-	public static $type $value.name = $value.value;
+	public static final $type $utils.toUpperCase($value.name) = $value.value;
 #end
 	public static final Map<$classType, String> names = new HashMap<$classType, String>() {{
 #foreach($value in $definition.values)

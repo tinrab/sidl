@@ -23,8 +23,8 @@
 	[Identifier] <Type>
 	{ <FieldList> }
 <Type>:
-	[]<Type>
-	[[LITERAL_INTEGER]]<Type>
+	[]<PrimaryType>
+	[[LITERAL_INTEGER]]<PrimaryType>
 	<PrimaryType>
 <PrimaryType>:
 	[Identifier]
