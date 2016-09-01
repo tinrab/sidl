@@ -73,6 +73,114 @@ $pkg
 		$classTypes.get($type.token.toString())##
 	#end
 #end
+#macro(writeField $name $type)
+#if($type == "IDENTIFIER")
+	offset = ${name}.writeTo(buf, offset);
+#elseif($type == "s")
+	byte[] utf8 = ${name}.getBytes("UTF-8");
+	int length = utf8.length;
+	int i = 0;
+	while ((length & 0xFFFFFF80) != 0L) {
+		buf[offset + 9 - i++] =  ((byte) ((length & 0x7F) | 0x80));
+		length >>>= 7;
+	}
+	buf[offset] = ((byte)(length & 0x7F));
+	offset += i + 1;
+	System.arraycopy(utf8, 0, buf, offset, utf8.length);
+	offset += utf8.length;
+#elseif($type == "b")
+	buf[offset++] = (byte)($name ? 1 : 0);
+#elseif($type == "i8" || $type == "u8")
+	buf[offset++] = ${name};
+#elseif($type == "i16" || $type == "u16")
+	buf[offset++] = (byte) ${name};
+	buf[offset++] = (byte) ${name} >> 8;
+#elseif($type == "i32" || $type == "u32")
+	buf[offset++] = (byte) ${name};
+	buf[offset++] = (byte) ${name} >> 8;
+	buf[offset++] = (byte) ${name} >> 16;
+	buf[offset++] = (byte) ${name} >> 24;
+#elseif($type == "i64" || $type == "u64")
+	buf[offset++] = (byte) ${name};
+	buf[offset++] = (byte) ${name} >> 8;
+	buf[offset++] = (byte) ${name} >> 16;
+	buf[offset++] = (byte) ${name} >> 24;
+	buf[offset++] = (byte) ${name} >> 32;
+	buf[offset++] = (byte) ${name} >> 40;
+	buf[offset++] = (byte) ${name} >> 48;
+	buf[offset++] = (byte) ${name} >> 56;
+#elseif($type == "f32")
+	int value = Float.floatToRawIntBits(${name});
+	buf[offset++] = (byte) value;
+	buf[offset++] = (byte) value >> 8;
+	buf[offset++] = (byte) value >> 16;
+	buf[offset++] = (byte) value >> 24;
+#elseif($type == "f64")
+	long value = Double.doubleToRawLongBits(${name});
+	buf[offset++] = (byte) value;
+	buf[offset++] = (byte) value >> 8;
+	buf[offset++] = (byte) value >> 16;
+	buf[offset++] = (byte) value >> 24;
+	buf[offset++] = (byte) value >> 32;
+	buf[offset++] = (byte) value >> 40;
+	buf[offset++] = (byte) value >> 48;
+	buf[offset++] = (byte) value >> 56;
+#end
+#end
+#macro(readField $name $type)
+#if($type == "IDENTIFIER")
+offset = ${name}.readFrom(buf, offset);
+#elseif($type == "s")
+byte[] utf8 = ${name}.getBytes("UTF-8");
+int length = utf8.length;
+int i = 0;
+while ((length & 0xFFFFFF80) != 0L) {
+buf[offset + 9 - i++] =  ((byte) ((length & 0x7F) | 0x80));
+length >>>= 7;
+}
+buf[offset] = ((byte)(length & 0x7F));
+offset += i + 1;
+System.arraycopy(utf8, 0, buf, offset, utf8.length);
+offset += utf8.length;
+#elseif($type == "b")
+buf[offset++] = (byte)($name ? 1 : 0);
+#elseif($type == "i8" || $type == "u8")
+buf[offset++] = ${name};
+#elseif($type == "i16" || $type == "u16")
+buf[offset++] = (byte) ${name};
+buf[offset++] = (byte) ${name} >> 8;
+#elseif($type == "i32" || $type == "u32")
+buf[offset++] = (byte) ${name};
+buf[offset++] = (byte) ${name} >> 8;
+buf[offset++] = (byte) ${name} >> 16;
+buf[offset++] = (byte) ${name} >> 24;
+#elseif($type == "i64" || $type == "u64")
+buf[offset++] = (byte) ${name};
+buf[offset++] = (byte) ${name} >> 8;
+buf[offset++] = (byte) ${name} >> 16;
+buf[offset++] = (byte) ${name} >> 24;
+buf[offset++] = (byte) ${name} >> 32;
+buf[offset++] = (byte) ${name} >> 40;
+buf[offset++] = (byte) ${name} >> 48;
+buf[offset++] = (byte) ${name} >> 56;
+#elseif($type == "f32")
+int value = Float.floatToRawIntBits(${name});
+buf[offset++] = (byte) value;
+buf[offset++] = (byte) value >> 8;
+buf[offset++] = (byte) value >> 16;
+buf[offset++] = (byte) value >> 24;
+#elseif($type == "f64")
+long value = Double.doubleToRawLongBits(${name});
+buf[offset++] = (byte) value;
+buf[offset++] = (byte) value >> 8;
+buf[offset++] = (byte) value >> 16;
+buf[offset++] = (byte) value >> 24;
+buf[offset++] = (byte) value >> 32;
+buf[offset++] = (byte) value >> 40;
+buf[offset++] = (byte) value >> 48;
+buf[offset++] = (byte) value >> 56;
+#end
+#end
 #if(!$isOneFile)
 #set($pkg = "#getPackage($path)")
 #set($pkg = $pkg.trim())
@@ -165,17 +273,77 @@ $typeName $camelCase#if($velocityHasNext), #end#end) {
 #end
 	}
 ## WriteTo
-	public void writeTo(OutputStream os) throws IOException {
+	public int writeTo(byte[] buf, int offset) throws IOException {
+#foreach($field in $definition.fields)
+	#set($camelCase = $utils.toCamelCase($field.name))
 
+	#if($field.type.class.simpleName == "ArrayType")
+		#set($typeName = "#getTypeName($field.type.type)")
+		#set($typeName = $typeName.trim())
+		{
+			for(int i = 0; i < $utils.toUpperCase($field.name)_LENGTH; i++) {
+				$typeName el = this.${camelCase}[i];
+				#set($tmp = "#writeField('el' $field.type.type.token.toString())")
+				${tmp.trim()}
+			}
+		}
+	#elseif($field.type.class.simpleName == "ListType")
+		{
+			for(int i = 0; i < this.${camelCase}.size(); i++) {
+				$typeName el = this.${camelCase}.get(i);
+				#set($tmp = "#writeField('el' $field.type.type.token.toString())")
+				${tmp.trim()}
+			}
+		}
+	#else
+		#set($fName = "this." + $camelCase)
+		#set($tmp = "#writeField($fName $field.type.token.toString())")
+		{
+			${tmp.trim()}
+		}
+	#end
+
+#end
+		return offset;
 	}
 	private void writeObject(ObjectOutputStream oos) throws IOException {
-		writeTo(oos);
 	}
 ## ReadFrom
-	public void readFrom(InputStream is) throws IOException {
+	public int readFrom(byte[] buf, int offset) throws IOException {
+#foreach($field in $definition.fields)
+	#set($typeName = "#getTypeName($field.type)")
+	#set($typeName = $typeName.trim())
+	#set($camelCase = $utils.toCamelCase($field.name))
 
+	#if($field.type.class.simpleName == "ArrayType")
+		#set($typeName = "#getTypeName($field.type.type)")
+		#set($typeName = $typeName.trim())
+		{
+			for(int i = 0; i < $utils.toUpperCase($field.name)_LENGTH; i++) {
+				$typeName el = this.${camelCase}[i];
+				#set($tmp = "#readField('el' $field.type.type.token.toString())")
+				${tmp.trim()}
+			}
+		}
+		#elseif($field.type.class.simpleName == "ListType")
+		{
+			for(int i = 0; i < this.${camelCase}.size(); i++) {
+				$typeName el = this.${camelCase}.get(i);
+				#set($tmp = "#writeField('el' $field.type.type.token.toString())")
+				${tmp.trim()}
+			}
+		}
+		#else
+			#set($fName = "this." + $camelCase)
+			#set($tmp = "#writeField($fName $field.type.token.toString())")
+		{
+			${tmp.trim()}
+		}
+	#end
+
+#end
+		return offset;
 	}
 	private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
-		readFrom(ois);
 	}
 }
