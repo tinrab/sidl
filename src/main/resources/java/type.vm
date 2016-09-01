@@ -75,7 +75,12 @@ $pkg
 #end
 #macro(writeField $name $type)
 #if($type == "IDENTIFIER")
-	offset = ${name}.writeTo(buf, offset);
+	if($name == null) {
+		buf[offset++] = (byte)0x80;
+	} else {
+		buf[offset++] = (byte)0x81;
+		offset = ${name}.writeTo(buf, offset);
+	}
 #elseif($type == "s")
 	byte[] utf8 = ${name}.getBytes("UTF-8");
 	int length = utf8.length;
@@ -94,91 +99,106 @@ $pkg
 	buf[offset++] = ${name};
 #elseif($type == "i16" || $type == "u16")
 	buf[offset++] = (byte) ${name};
-	buf[offset++] = (byte) ${name} >> 8;
+	buf[offset++] = (byte) (${name} >> 8);
 #elseif($type == "i32" || $type == "u32")
 	buf[offset++] = (byte) ${name};
-	buf[offset++] = (byte) ${name} >> 8;
-	buf[offset++] = (byte) ${name} >> 16;
-	buf[offset++] = (byte) ${name} >> 24;
+	buf[offset++] = (byte) (${name} >> 8);
+	buf[offset++] = (byte) (${name} >> 16);
+	buf[offset++] = (byte) (${name} >> 24);
 #elseif($type == "i64" || $type == "u64")
 	buf[offset++] = (byte) ${name};
-	buf[offset++] = (byte) ${name} >> 8;
-	buf[offset++] = (byte) ${name} >> 16;
-	buf[offset++] = (byte) ${name} >> 24;
-	buf[offset++] = (byte) ${name} >> 32;
-	buf[offset++] = (byte) ${name} >> 40;
-	buf[offset++] = (byte) ${name} >> 48;
-	buf[offset++] = (byte) ${name} >> 56;
+	buf[offset++] = (byte) (${name} >> 8);
+	buf[offset++] = (byte) (${name} >> 16);
+	buf[offset++] = (byte) (${name} >> 24);
+	buf[offset++] = (byte) (${name} >> 32);
+	buf[offset++] = (byte) (${name} >> 40);
+	buf[offset++] = (byte) (${name} >> 48);
+	buf[offset++] = (byte) (${name} >> 56);
 #elseif($type == "f32")
 	int value = Float.floatToRawIntBits(${name});
 	buf[offset++] = (byte) value;
-	buf[offset++] = (byte) value >> 8;
-	buf[offset++] = (byte) value >> 16;
-	buf[offset++] = (byte) value >> 24;
+	buf[offset++] = (byte) (value >> 8);
+	buf[offset++] = (byte) (value >> 16);
+	buf[offset++] = (byte) (value >> 24);
 #elseif($type == "f64")
 	long value = Double.doubleToRawLongBits(${name});
 	buf[offset++] = (byte) value;
-	buf[offset++] = (byte) value >> 8;
-	buf[offset++] = (byte) value >> 16;
-	buf[offset++] = (byte) value >> 24;
-	buf[offset++] = (byte) value >> 32;
-	buf[offset++] = (byte) value >> 40;
-	buf[offset++] = (byte) value >> 48;
-	buf[offset++] = (byte) value >> 56;
+	buf[offset++] = (byte) (value >> 8);
+	buf[offset++] = (byte) (value >> 16);
+	buf[offset++] = (byte) (value >> 24);
+	buf[offset++] = (byte) (value >> 32);
+	buf[offset++] = (byte) (value >> 40);
+	buf[offset++] = (byte) (value >> 48);
+	buf[offset++] = (byte) (value >> 56);
 #end
 #end
-#macro(readField $name $type)
+#macro(readField $name $type $typeName)
 #if($type == "IDENTIFIER")
-offset = ${name}.readFrom(buf, offset);
+	if(buf[offset++] == (byte)0x81) {
+		if($name == null) {
+			$name = new ${typeName}();
+		}
+		offset = ${name}.readFrom(buf, offset);
+	}
 #elseif($type == "s")
-byte[] utf8 = ${name}.getBytes("UTF-8");
-int length = utf8.length;
-int i = 0;
-while ((length & 0xFFFFFF80) != 0L) {
-buf[offset + 9 - i++] =  ((byte) ((length & 0x7F) | 0x80));
-length >>>= 7;
-}
-buf[offset] = ((byte)(length & 0x7F));
-offset += i + 1;
-System.arraycopy(utf8, 0, buf, offset, utf8.length);
-offset += utf8.length;
+	int value = 0;
+	int i = 0;
+	byte rb = Byte.MIN_VALUE;
+	for (; offset < buf.length; offset++) {
+		byte b = buf[offset];
+		rb = b;
+		if ((b & 0x80) == 0) {
+			offset++;
+			break;
+		}
+		value |= (b & 0x7f) << i;
+		i += 7;
+		if (i > 35) {
+			throw new RuntimeException("Invalid string length data");
+		}
+	}
+	int length = value | (rb << i);
+	byte[] bytes = new byte[length];
+	System.arraycopy(buf, offset, bytes, 0, length);
+	offset += length;
+	$name = new String(bytes, "UTF-8");
 #elseif($type == "b")
-buf[offset++] = (byte)($name ? 1 : 0);
+	$name = buf[offset++] == 1;
 #elseif($type == "i8" || $type == "u8")
-buf[offset++] = ${name};
+	$name = buf[offset++];
 #elseif($type == "i16" || $type == "u16")
-buf[offset++] = (byte) ${name};
-buf[offset++] = (byte) ${name} >> 8;
+	$name = (short)((buf[offset++] & 0xFF) |
+						 (buf[offset++] << 8));
 #elseif($type == "i32" || $type == "u32")
-buf[offset++] = (byte) ${name};
-buf[offset++] = (byte) ${name} >> 8;
-buf[offset++] = (byte) ${name} >> 16;
-buf[offset++] = (byte) ${name} >> 24;
+	$name = (int)((buf[offset++] & 0xFF) |
+						 ((buf[offset++] & 0xFF) << 8)   |
+						 ((buf[offset++] & 0xFF) << 16)  |
+						 (buf[offset++] << 24));
 #elseif($type == "i64" || $type == "u64")
-buf[offset++] = (byte) ${name};
-buf[offset++] = (byte) ${name} >> 8;
-buf[offset++] = (byte) ${name} >> 16;
-buf[offset++] = (byte) ${name} >> 24;
-buf[offset++] = (byte) ${name} >> 32;
-buf[offset++] = (byte) ${name} >> 40;
-buf[offset++] = (byte) ${name} >> 48;
-buf[offset++] = (byte) ${name} >> 56;
+	$name = 		(((long)buf[offset++] & 0xFF) |
+					(((long)buf[offset++] & 0xFF) << 8)   |
+					(((long)buf[offset++] & 0xFF) << 16)  |
+					(((long)buf[offset++] & 0xFF) << 24)  |
+					(((long)buf[offset++] & 0xFF) << 32)  |
+					(((long)buf[offset++] & 0xFF) << 40)  |
+					(((long)buf[offset++] & 0xFF) << 48)  |
+					(((long)buf[offset++] & 0xFF) << 56));
 #elseif($type == "f32")
-int value = Float.floatToRawIntBits(${name});
-buf[offset++] = (byte) value;
-buf[offset++] = (byte) value >> 8;
-buf[offset++] = (byte) value >> 16;
-buf[offset++] = (byte) value >> 24;
+	int value = (int)((buf[offset++] & 0xFF) |
+					((buf[offset++] & 0xFF) << 8)   |
+					((buf[offset++] & 0xFF) << 16)  |
+					(buf[offset++] << 24));
+	$name = Float.intBitsToFloat(value);
 #elseif($type == "f64")
-long value = Double.doubleToRawLongBits(${name});
-buf[offset++] = (byte) value;
-buf[offset++] = (byte) value >> 8;
-buf[offset++] = (byte) value >> 16;
-buf[offset++] = (byte) value >> 24;
-buf[offset++] = (byte) value >> 32;
-buf[offset++] = (byte) value >> 40;
-buf[offset++] = (byte) value >> 48;
-buf[offset++] = (byte) value >> 56;
+	long value = (((long)buf[offset++] & 0xFF) |
+					(((long)buf[offset++] & 0xFF) << 8)   |
+					(((long)buf[offset++] & 0xFF) << 16)  |
+					(((long)buf[offset++] & 0xFF) << 24)  |
+					(((long)buf[offset++] & 0xFF) << 32)  |
+					(((long)buf[offset++] & 0xFF) << 40)  |
+					(((long)buf[offset++] & 0xFF) << 48)  |
+					(((long)buf[offset++] & 0xFF) << 56));
+	${name} = Double.longBitsToDouble(value);
 #end
 #end
 #if(!$isOneFile)
@@ -256,7 +276,7 @@ $typeName $camelCase#if($velocityHasNext), #end#end) {
 #if($field.type.class.simpleName == "ArrayType")
 		this.$camelCase = new ${baseType}[$utils.toUpperCase($field.name)_LENGTH];
 #elseif($field.type.class.simpleName == "ListType")
-		this.$camelCase = new ArrayList<$baseType>();
+		this.$camelCase = new java.util.ArrayList<$baseType>();
 #elseif($field.type.token.toString() == "s")
 		this.$camelCase = "";
 #elseif($field.type.token.toString() == "b")
@@ -272,25 +292,82 @@ $typeName $camelCase#if($velocityHasNext), #end#end) {
 #end
 #end
 	}
+##
+## Copy
+	public $name copy() {
+		$name newCopy = new $name();
+#foreach($field in $definition.fields)
+#set($camelCase = $utils.toCamelCase($field.name))
+#set($baseType = "#getBaseType($field.type)")
+#set($baseType = $baseType.trim())
+#if($field.type.class.simpleName == "ArrayType")
+		newCopy.$camelCase = new ${baseType}[$utils.toUpperCase($field.name)_LENGTH];
+		for(int i = 0; i < $utils.toUpperCase($field.name)_LENGTH; i++) {
+			#if($field.type.type.token.toString() == "IDENTIFIER")
+			if(this.${camelCase} != null) {
+				newCopy.${camelCase}[i] = this.${camelCase}[i].copy();
+			}
+			#else
+			newCopy.${camelCase}[i] = this.${camelCase}[i];
+			#end
+		}
+#elseif($field.type.class.simpleName == "ListType")
+		newCopy.$camelCase = new java.util.ArrayList<$baseType>(this.${camelCase}.size());
+		for(int i = 0; i < this.${camelCase}.size(); i++) {
+			#if($field.type.type.token.toString() == "IDENTIFIER")
+			if(this.${camelCase}.get(i) != null) {
+				newCopy.${camelCase}.add(this.${camelCase}.get(i).copy());
+			}
+			#else
+			newCopy.${camelCase}.add(this.${camelCase}.get(i));
+			#end
+		}
+#elseif($field.type.token.toString() == "IDENTIFIER")
+		if(this.${camelCase} != null) {
+			newCopy.$camelCase = this.${camelCase}.copy();
+		}
+#else
+		newCopy.$camelCase = this.$camelCase;
+#end
+#end
+		return newCopy;
+	}
 ## WriteTo
 	public int writeTo(byte[] buf, int offset) throws IOException {
 #foreach($field in $definition.fields)
 	#set($camelCase = $utils.toCamelCase($field.name))
-
 	#if($field.type.class.simpleName == "ArrayType")
 		#set($typeName = "#getTypeName($field.type.type)")
 		#set($typeName = $typeName.trim())
 		{
 			for(int i = 0; i < $utils.toUpperCase($field.name)_LENGTH; i++) {
-				$typeName el = this.${camelCase}[i];
+		#if($field.type.type.token.toString() == "IDENTIFIER")
+			$typeName el = this.${camelCase}[i];
+		#else
+			${types.get($field.type.type.token.toString())} el = this.${camelCase}[i];
+		#end
 				#set($tmp = "#writeField('el' $field.type.type.token.toString())")
 				${tmp.trim()}
 			}
 		}
 	#elseif($field.type.class.simpleName == "ListType")
 		{
+			{
+				int length = this.${camelCase}.size();
+				int i = 0;
+				while ((length & 0xFFFFFF80) != 0L) {
+					buf[offset + 9 - i++] =  ((byte) ((length & 0x7F) | 0x80));
+					length >>>= 7;
+				}
+				buf[offset] = ((byte)(length & 0x7F));
+				offset += i + 1;
+			}
 			for(int i = 0; i < this.${camelCase}.size(); i++) {
-				$typeName el = this.${camelCase}.get(i);
+		#if($field.type.type.token.toString() == "IDENTIFIER")
+			$typeName el = this.${camelCase}.get(i);
+		#else
+			${types.get($field.type.type.token.toString())} el = this.${camelCase}.get(i);
+		#end
 				#set($tmp = "#writeField('el' $field.type.type.token.toString())")
 				${tmp.trim()}
 			}
@@ -302,7 +379,6 @@ $typeName $camelCase#if($velocityHasNext), #end#end) {
 			${tmp.trim()}
 		}
 	#end
-
 #end
 		return offset;
 	}
@@ -311,36 +387,74 @@ $typeName $camelCase#if($velocityHasNext), #end#end) {
 ## ReadFrom
 	public int readFrom(byte[] buf, int offset) throws IOException {
 #foreach($field in $definition.fields)
-	#set($typeName = "#getTypeName($field.type)")
-	#set($typeName = $typeName.trim())
 	#set($camelCase = $utils.toCamelCase($field.name))
-
+	#set($baseType = "#getBaseType($field.type)")
+	#set($baseType = $baseType.trim())
 	#if($field.type.class.simpleName == "ArrayType")
 		#set($typeName = "#getTypeName($field.type.type)")
 		#set($typeName = $typeName.trim())
 		{
+			if(this.$camelCase == null) {
+				this.$camelCase = new ${baseType}[$utils.toUpperCase($field.name)_LENGTH];
+			}
 			for(int i = 0; i < $utils.toUpperCase($field.name)_LENGTH; i++) {
-				$typeName el = this.${camelCase}[i];
-				#set($tmp = "#readField('el' $field.type.type.token.toString())")
-				${tmp.trim()}
-			}
-		}
-		#elseif($field.type.class.simpleName == "ListType")
-		{
-			for(int i = 0; i < this.${camelCase}.size(); i++) {
-				$typeName el = this.${camelCase}.get(i);
-				#set($tmp = "#writeField('el' $field.type.type.token.toString())")
-				${tmp.trim()}
-			}
-		}
+		#if($field.type.type.token.toString() == "IDENTIFIER")
+			$typeName el;
 		#else
+			${types.get($field.type.type.token.toString())} el;
+		#end
+				#set($tmp = "#readField('el' $field.type.type.token.toString() $typeName)")
+				${tmp.trim()}
+				this.${camelCase}[i] = el;
+			}
+		}
+	#elseif($field.type.class.simpleName == "ListType")
+		#set($typeName = "#getTypeName($field.type.type)")
+		#set($typeName = $typeName.trim())
+		{
+			int size = 0;
+			{
+				int value = 0;
+				int i = 0;
+				byte rb = Byte.MIN_VALUE;
+				for (; offset < buf.length; offset++) {
+					byte b = buf[offset];
+					rb = b;
+					if ((b & 0x80) == 0) {
+						offset++;
+						break;
+					}
+					value |= (b & 0x7f) << i;
+					i += 7;
+					if (i > 35) {
+						throw new RuntimeException("Invalid list size data");
+					}
+				}
+				size = value | (rb << i);
+			}
+			if(this.$camelCase == null) {
+				this.$camelCase = new java.util.ArrayList<$baseType>(size);
+			}
+			for(int i = 0; i < size; i++) {
+		#if($field.type.type.token.toString() == "IDENTIFIER")
+				$typeName el;
+		#else
+				${types.get($field.type.type.token.toString())} el;
+		#end
+				#set($tmp = "#readField('el' $field.type.type.token.toString() $typeName)")
+				${tmp.trim()}
+				this.${camelCase}.add(el);
+			}
+		}
+	#else
+			#set($typeName = "#getTypeName($field.type)")
+			#set($typeName = $typeName.trim())
 			#set($fName = "this." + $camelCase)
-			#set($tmp = "#writeField($fName $field.type.token.toString())")
+			#set($tmp = "#readField($fName $field.type.token.toString() $typeName)")
 		{
 			${tmp.trim()}
 		}
 	#end
-
 #end
 		return offset;
 	}

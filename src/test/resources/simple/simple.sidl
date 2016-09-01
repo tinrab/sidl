@@ -5,6 +5,6 @@ type Simple {
 	Item Item
 	Name s
 	Value f64
-	Arr [10]i
+	Arr [2]i
 	Li []u
 }

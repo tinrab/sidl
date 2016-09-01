@@ -1,5 +1,8 @@
 package com.moybl.sidl;
 
+import com.google.googlejavaformat.java.Formatter;
+import com.google.googlejavaformat.java.FormatterException;
+
 import com.moybl.sidl.ast.*;
 import com.moybl.sidl.semantics.NameChecker;
 
@@ -33,7 +36,7 @@ public class SimpleIDL {
 		options.addOption(lang);
 
 		CommandLineParser cmdParser = new DefaultParser();
-		HelpFormatter formatter = new HelpFormatter();
+		HelpFormatter helpFormatter = new HelpFormatter();
 		CommandLine cmd;
 
 		try {
@@ -126,10 +129,19 @@ public class SimpleIDL {
 				}
 
 				t.merge(context, sw);
+
+				if(!oneFile){
+					Formatter javaFormatter = new Formatter();
+					try {
+						System.out.println(javaFormatter.formatSource(sw.toString()));
+					} catch (FormatterException e) {
+						e.printStackTrace();
+					}
+
+					sw = new StringWriter();
+				}
 			}
 		}
-
-		System.out.println(sw);
 	}
 
 	public static Schema compile(InputStream[] inputStreams) {
