@@ -41,16 +41,24 @@ public class Parser {
 	}
 
 	private Definition parseDefinition() {
-		switch (next.getToken()) {
-			case KEYWORD_NAMESPACE:
-				return parseNamespaceDefinition();
-			case KEYWORD_TYPE:
-				return parseTypeDefinition();
-			case KEYWORD_ENUM:
-				return parseEnumDefinition();
+		if (next.getToken() == Token.KEYWORD_NAMESPACE) {
+			return parseNamespaceDefinition();
 		}
 
-		throw ParserException.internal();
+		Definition def = null;
+		List<Attribute> attributes = parseAttributeList();
+
+		if (next.getToken() == Token.KEYWORD_TYPE) {
+			def = parseTypeDefinition();
+		} else if (next.getToken() == Token.KEYWORD_ENUM) {
+			def = parseEnumDefinition();
+		} else {
+			throw ParserException.internal();
+		}
+
+		def.setAttributes(attributes);
+
+		return def;
 	}
 
 	private NamespaceDefinition parseNamespaceDefinition() {
@@ -126,11 +134,15 @@ public class Parser {
 		while (match(Token.IDENTIFIER)) {
 			EnumValue ev = parseEnumValue();
 
+			if (ev.getValue() != null && ev.getValue().getKind() != Literal.Kind.INTEGER) {
+				throw ParserException.expectedIntegerType(current.getPosition(), current.getToken());
+			}
+
 			if (ev.getValue() == null) {
-				ev.setValue(next + "");
+				ev.setValue(new Literal(ev.getPosition(), Literal.Kind.INTEGER, next));
 				next++;
 			} else {
-				long val = Long.parseLong(ev.getValue());
+				long val = ev.getValue().getLongValue();
 
 				if (next != 0 && val <= next) {
 					throw ParserException.enumInvalidOrder(ev.getPosition());
@@ -152,16 +164,13 @@ public class Parser {
 		check(Token.IDENTIFIER);
 		String name = current.getLexeme();
 		Position a = current.getPosition();
-		Position b = current.getPosition();
-		String value = null;
+		Literal value = null;
 
 		if (accept(Token.EQUALS)) {
-			check(Token.LITERAL_INTEGER);
-			b = current.getPosition();
-			value = current.getLexeme();
+			value = parseLiteral();
 		}
 
-		return new EnumValue(Position.expand(a, b), name, value);
+		return new EnumValue(Position.expand(a, current.getPosition()), name, value);
 	}
 
 	private Field parseField() {
@@ -196,7 +205,8 @@ public class Parser {
 				int length = Integer.parseInt(current.getLexeme());
 				check(Token.CLOSE_BRACKET);
 
-				return new ArrayType(Position.expand(a, current.getPosition()), length, parsePrimaryType());
+				return new ArrayType(Position
+						.expand(a, current.getPosition()), length, parsePrimaryType());
 			} else {
 				check(Token.CLOSE_BRACKET);
 
@@ -228,6 +238,75 @@ public class Parser {
 		check(next.getToken());
 
 		return new PrimaryType(current.getPosition(), current.getToken(), false);
+	}
+
+	private List<Attribute> parseAttributeList() {
+		List<Attribute> attributes = new ArrayList<Attribute>();
+
+		while (match(Token.AT)) {
+			attributes.add(parseAttribute());
+		}
+
+		return attributes;
+	}
+
+	private Attribute parseAttribute() {
+		check(Token.AT);
+		Position a = current.getPosition();
+		check(Token.IDENTIFIER);
+		String name = current.getLexeme();
+
+		List<AttributeEntry> entries = new ArrayList<AttributeEntry>();
+
+		if (accept(Token.OPEN_PARENTHESIS)) {
+			while (match(Token.IDENTIFIER) || next.getToken().isLiteral()) {
+				entries.add(parseAttributeEntry());
+				accept(Token.COMMA);
+			}
+
+			check(Token.CLOSE_PARENTHESIS);
+		}
+
+		return new Attribute(Position.expand(a, current.getPosition()), name, entries);
+	}
+
+	private AttributeEntry parseAttributeEntry() {
+		String name = null;
+		Position a = null;
+
+		if (accept(Token.IDENTIFIER)) {
+			a = current.getPosition();
+			name = current.getLexeme();
+			check(Token.EQUALS);
+		}
+
+		Literal value = parseLiteral();
+
+		if (a == null) {
+			a = current.getPosition();
+		}
+
+		return new AttributeEntry(Position.expand(a, current.getPosition()), name, value);
+	}
+
+	private Literal parseLiteral() {
+		Literal.Kind kind = Literal.Kind.INTEGER;
+		Object value = null;
+
+		if (accept(Token.LITERAL_INTEGER)) {
+			kind = Literal.Kind.INTEGER;
+			value = Long.parseLong(current.getLexeme());
+		} else if (accept(Token.LITERAL_STRING)) {
+			kind = Literal.Kind.STRING;
+			value = current.getLexeme().substring(1, current.getLexeme().length() - 1);
+		} else if (accept(Token.LITERAL_FLOAT)) {
+			kind = Literal.Kind.FLOAT;
+			value = Double.parseDouble(current.getLexeme());
+		} else {
+			throw ParserException.expectedLiteral(current.getPosition(), current.getToken());
+		}
+
+		return new Literal(current.getPosition(), kind, value);
 	}
 
 	private Identifier parseIdentifier() {

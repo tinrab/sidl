@@ -4,6 +4,8 @@ import com.moybl.sidl.ast.*;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
+
 public class ParserTest {
 
 	@Test
@@ -55,6 +57,36 @@ public class ParserTest {
 		Assert.assertEquals(10, ((ArrayType) td.getFields().get(0).getType()).getLength());
 		Assert.assertEquals(Token.TYPE_BOOL, ((PrimaryType) ((ArrayType) td.getFields().get(0)
 				.getType()).getType()).getToken());
+	}
+
+	@Test
+	public void testAttributes() {
+		Document document = SimpleIDL
+				.parse("@A @B() @C(k1=1, k2='awd', k3=\"ad\", k4 =  3.14) type _{}");
+		TypeDefinition td = (TypeDefinition) document.getDefinitions().get(0);
+		List<Attribute> a = td.getAttributes();
+
+		Assert.assertEquals("A", a.get(0).getName());
+		Assert.assertEquals("B", a.get(1).getName());
+
+		Attribute c = a.get(2);
+		Assert.assertEquals("C", c.getName());
+
+		Assert.assertEquals("k1", c.getEntries().get(0).getName());
+		Assert.assertEquals(Literal.Kind.INTEGER, c.getEntries().get(0).getValue().getKind());
+		Assert.assertEquals(1, c.getEntries().get(0).getValue().getLongValue());
+
+		Assert.assertEquals("k2", c.getEntries().get(1).getName());
+		Assert.assertEquals(Literal.Kind.STRING, c.getEntries().get(1).getValue().getKind());
+		Assert.assertEquals("awd", c.getEntries().get(1).getValue().getStringValue());
+
+		Assert.assertEquals("k3", c.getEntries().get(2).getName());
+		Assert.assertEquals(Literal.Kind.STRING, c.getEntries().get(2).getValue().getKind());
+		Assert.assertEquals("ad", c.getEntries().get(2).getValue().getStringValue());
+
+		Assert.assertEquals("k4", c.getEntries().get(3).getName());
+		Assert.assertEquals(Literal.Kind.FLOAT, c.getEntries().get(3).getValue().getKind());
+		Assert.assertEquals(3.14, c.getEntries().get(3).getValue().getDoubleValue(), 0.01);
 	}
 
 	@Test

@@ -76,6 +76,27 @@ public class DebugAstVisitor implements Visitor {
 		print("namespace %s", node.getDefinedName());
 	}
 
+	public void visit(Attribute node) {
+		print("@%s", node.getName());
+		ident++;
+		for (int i = 0; i < node.getEntries().size(); i++) {
+			node.getEntries().get(i).accept(this);
+		}
+		ident--;
+	}
+
+	public void visit(AttributeEntry node) {
+		if (node.getName() == null) {
+			print(node.getValue().getValue().toString());
+		} else {
+			print("%s = %s", node.getName(), node.getValue().getValue().toString());
+		}
+	}
+
+	public void visit(Literal node) {
+		print(node.getValue().toString());
+	}
+
 	private void print(String format, Object... args) {
 		for (int i = 0; i < ident * 3; i++) {
 			System.out.print(" ");

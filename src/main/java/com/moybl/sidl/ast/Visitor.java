@@ -22,4 +22,10 @@ public interface Visitor {
 
 	void visit(NamespaceDefinition node);
 
+	void visit(Attribute node);
+
+	void visit(AttributeEntry node);
+
+	void visit(Literal node);
+
 }

@@ -22,6 +22,10 @@ public class ParserException extends RuntimeException {
 		return new ParserException("Internal error");
 	}
 
+	public static ParserException unexpectedEof(Position position) {
+		return new ParserException(position, "Unexpected EOF");
+	}
+
 	public static ParserException unexpected(Position position, Token expected, Token actual) {
 		return new ParserException(position, String
 				.format("Expected '%s', got '%s'", expected, actual));
@@ -30,6 +34,11 @@ public class ParserException extends RuntimeException {
 	public static ParserException expectedType(Position position, Token actual) {
 		return new ParserException(position, String
 				.format("Expected type, got '%s'", actual));
+	}
+
+	public static ParserException expectedLiteral(Position position, Token actual) {
+		return new ParserException(position, String
+				.format("Expected literal, got '%s'", actual));
 	}
 
 	public static ParserException expectedIntegerType(Position position, Token actual) {

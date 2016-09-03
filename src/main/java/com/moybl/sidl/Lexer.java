@@ -39,6 +39,9 @@ public class Lexer {
 		put("}", Token.CLOSE_BRACE);
 		put("[", Token.OPEN_BRACKET);
 		put("]", Token.CLOSE_BRACKET);
+		put("(", Token.OPEN_PARENTHESIS);
+		put(")", Token.CLOSE_PARENTHESIS);
+		put("@", Token.AT);
 	}};
 
 	public Lexer(InputStream stream) {
@@ -99,6 +102,8 @@ public class Lexer {
 					int endColumn = column;
 
 					sb.append((char) ch);
+					boolean isScientific = false;
+					boolean hasPower = false;
 
 					while (true) {
 						stream.mark(1);
@@ -108,6 +113,32 @@ public class Lexer {
 							ch = next;
 							sb.append((char) ch);
 							endColumn++;
+
+							if(isScientific){
+								hasPower = true;
+							}
+						} else if (next == '.') {
+							token = Token.LITERAL_FLOAT;
+
+							ch = next;
+							sb.append((char) ch);
+							endColumn++;
+						} else if(next == 'E'){
+							token = Token.LITERAL_FLOAT;
+							isScientific = true;
+
+							ch = next;
+							sb.append((char) ch);
+							endColumn++;
+						} else if(next == '-'){
+							if(isScientific && !hasPower) {
+								ch = next;
+								sb.append((char) ch);
+								endColumn++;
+							} else {
+								stream.reset();
+								break;
+							}
 						} else {
 							stream.reset();
 							break;
@@ -146,7 +177,36 @@ public class Lexer {
 					column = endColumn - 1;
 
 					break;
-				} else if (!Character.isWhitespace(ch)) {
+				}
+
+				if(ch == '"' || ch == '\'') {
+					int strChar = ch;
+
+					StringBuilder sb = new StringBuilder();
+					int endColumn = column + 1;
+					sb.append((char) ch);
+
+					do {
+						ch = stream.read();
+						endColumn++;
+						sb.append((char) ch);
+
+						if (ch == strChar) {
+							break;
+						} else if (ch == -1) {
+							throw LexerException.unclosedString(line, column);
+						}
+					} while (true);
+
+					String lexeme = sb.toString();
+
+					symbol = new Symbol(Token.LITERAL_STRING, lexeme, line, column, endColumn);
+					column = endColumn - 1;
+
+					break;
+				}
+
+				if (!Character.isWhitespace(ch)) {
 					String lexeme = Character.toString((char) ch);
 					Token token = PUNCTUATORS.get(lexeme);
 
@@ -172,7 +232,9 @@ public class Lexer {
 					column = endColumn;
 
 					break;
-				} else if (ch == '\n' || ch == '\r') {
+				}
+
+				if (ch == '\n' || ch == '\r') {
 					line++;
 					column = 0;
 

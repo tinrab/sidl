@@ -12,10 +12,15 @@ public enum Token {
 	CLOSE_BRACE,
 	OPEN_BRACKET,
 	CLOSE_BRACKET,
+	OPEN_PARENTHESIS,
+	CLOSE_PARENTHESIS,
+	AT,
 	KEYWORD_TYPE,
 	KEYWORD_ENUM,
 	KEYWORD_NAMESPACE,
 	LITERAL_INTEGER,
+	LITERAL_STRING,
+	LITERAL_FLOAT,
 
 	TYPE_STRING,
 	TYPE_BOOL,
@@ -36,6 +41,10 @@ public enum Token {
 
 	public boolean isIntegerType() {
 		return ordinal() >= TYPE_INT8.ordinal() && ordinal() <= TYPE_UINT64.ordinal();
+	}
+
+	public boolean isLiteral() {
+		return ordinal() >= LITERAL_INTEGER.ordinal() && ordinal() <= LITERAL_FLOAT.ordinal();
 	}
 
 	@Override
@@ -61,6 +70,12 @@ public enum Token {
 				return "[";
 			case CLOSE_BRACKET:
 				return "]";
+			case OPEN_PARENTHESIS:
+				return "(";
+			case CLOSE_PARENTHESIS:
+				return ")";
+			case AT:
+				return "@";
 			case KEYWORD_TYPE:
 				return "type";
 			case KEYWORD_ENUM:
@@ -69,6 +84,10 @@ public enum Token {
 				return "namespace";
 			case LITERAL_INTEGER:
 				return "LITERAL_INTEGER";
+			case LITERAL_STRING:
+				return "LITERAL_STRING";
+			case LITERAL_FLOAT:
+				return "LITERAL_FLOAT";
 
 			case TYPE_STRING:
 				return "s";

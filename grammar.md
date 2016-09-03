@@ -2,37 +2,55 @@
 ```xml
 <Document>:
 	<EOF>
-	namespace <Namespace>
-	<Definition> <Document>
+	namespace <Namespace> <Document>
+	<AttributeList> <Definition> <Document>
 <Namespace>:
-	<Identifier> : <Namespace>
-	<Identifier>
+	[IDENTIFIER] : <Namespace>
+	[IDENTIFIER]
 <Definition>:
-	type [Identifier] [Identifier]
-	type [Identifier] <Type>
-	type [Identifier] { <FieldList> }
-	enum [Identifier] { <EnumList> }
-	enum [Identifier] <IntType> { <EnumList> }
+	type [IDENTIFIER] [IDENTIFIER]
+	type [IDENTIFIER] <Type>
+	type [IDENTIFIER] { <FieldList> }
+	enum [IDENTIFIER] { <EnumList> }
+	enum [IDENTIFIER] <IntType> { <EnumList> }
 <FieldList>:
+	empty
 	<Field>
 	<Field> <ListDelimiter> <FieldList>
 <Field>:
-	[Identifier] <Type>
+	[IDENTIFIER] <Type>
 	{ <FieldList> }
 <Type>:
 	[]<PrimaryType>
 	[[LITERAL_INTEGER]]<PrimaryType>
 	<PrimaryType>
 <PrimaryType>:
-	[Identifier]
-	*[Identifier]
+	[IDENTIFIER]
+	*[IDENTIFIER]
 	s | bool | <IntType>
 <EnumList>:
-	[EnumValue]
-	[EnumValue] <ListDelimiter> <EnumList>
+	<EnumValue>
+	<EnumValue> <ListDelimiter> <EnumList>
 <EnumValue>:
-	[Identifier]
-	[Identifier] = [LITERAL_INTEGER]
+	[IDENTIFIER]
+	[IDENTIFIER] = [LITERAL_INTEGER]
+<AttributeList>:
+	empty
+	<Attribute>
+	<Attribute> <AttributeList>
+<Attribute>:
+	@ [IDENTIFIER] ( <AttributeEntries> )
+	@ [IDENTIFIER]
+<AttributeEntries>:
+	empty
+	<AttributeEntry> <ListDelimiter> <AttributeEntries>
+<AttributeEntry>:
+	<Literal>
+	[IDENTIFIER] = <Literal>
+<Literal>:
+	[LITERAL_INTEGER]
+	[LITERAL_STRING]
+	[LITERAL_FLOAT]
 <ListDelimiter>:
 	<space>
 	,

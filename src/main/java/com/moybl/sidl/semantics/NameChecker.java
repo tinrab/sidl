@@ -71,4 +71,13 @@ public class NameChecker implements Visitor {
 	public void visit(NamespaceDefinition node) {
 	}
 
+	public void visit(Attribute node) {
+	}
+
+	public void visit(AttributeEntry node) {
+	}
+
+	public void visit(Literal node) {
+	}
+
 }

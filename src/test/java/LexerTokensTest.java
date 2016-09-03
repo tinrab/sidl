@@ -23,15 +23,22 @@ public class LexerTokensTest {
 								Token.KEYWORD_NAMESPACE)
 				},
 				{
-						", [] {} 0 42/*this is a comment*/",
+						", [] {} () @ 0 42 3.14 7E11 \"hi\" 'hey'/*this is a comment*/",
 						Arrays.asList(
 								Token.COMMA,
 								Token.OPEN_BRACKET,
 								Token.CLOSE_BRACKET,
 								Token.OPEN_BRACE,
 								Token.CLOSE_BRACE,
+								Token.OPEN_PARENTHESIS,
+								Token.CLOSE_PARENTHESIS,
+								Token.AT,
 								Token.LITERAL_INTEGER,
-								Token.LITERAL_INTEGER)
+								Token.LITERAL_INTEGER,
+								Token.LITERAL_FLOAT,
+								Token.LITERAL_FLOAT,
+								Token.LITERAL_STRING,
+								Token.LITERAL_STRING)
 				},
 				{
 						"x s i i8 i16 i32 i64 u u8 u16 u32 u64 f32 f64 b",
