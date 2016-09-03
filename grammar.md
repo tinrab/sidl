@@ -18,8 +18,8 @@
 	<Field>
 	<Field> <ListDelimiter> <FieldList>
 <Field>:
-	[IDENTIFIER] <Type>
-	{ <FieldList> }
+	<AttributeList> [IDENTIFIER] <Type>
+	<AttributeList> [IDENTIFIER] { <FieldList> }
 <Type>:
 	[]<PrimaryType>
 	[[LITERAL_INTEGER]]<PrimaryType>

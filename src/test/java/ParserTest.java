@@ -62,7 +62,7 @@ public class ParserTest {
 	@Test
 	public void testAttributes() {
 		Document document = SimpleIDL
-				.parse("@A @B() @C(k1=1, k2='awd', k3=\"ad\", k4 =  3.14) type _{}");
+				.parse("@A @B() @C(k1=1, k2='awd', k3=\"ad\", k4 =  3.14) type T{@D f i}");
 		TypeDefinition td = (TypeDefinition) document.getDefinitions().get(0);
 		List<Attribute> a = td.getAttributes();
 
@@ -87,6 +87,8 @@ public class ParserTest {
 		Assert.assertEquals("k4", c.getEntries().get(3).getName());
 		Assert.assertEquals(Literal.Kind.FLOAT, c.getEntries().get(3).getValue().getKind());
 		Assert.assertEquals(3.14, c.getEntries().get(3).getValue().getDoubleValue(), 0.01);
+
+		Assert.assertEquals("D", td.getFields().get(0).getAttributes().get(0).getName());
 	}
 
 	@Test

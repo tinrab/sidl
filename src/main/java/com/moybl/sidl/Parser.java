@@ -87,16 +87,8 @@ public class Parser {
 		}
 
 		List<Field> fields = parseFieldList();
-		Position b = null;
-		if (fields.size() != 0) {
-			b = Position
-					.expand(fields.get(0).getPosition(), fields.get(fields.size() - 1)
-							.getPosition());
-		} else {
-			b = current.getPosition();
-		}
 
-		return new TypeDefinition(Position.expand(a, b), name, fields);
+		return new TypeDefinition(Position.expand(a, current.getPosition()), name, fields);
 	}
 
 	private EnumDefinition parseEnumDefinition() {
@@ -174,20 +166,21 @@ public class Parser {
 	}
 
 	private Field parseField() {
+		List<Attribute> attributes = parseAttributeList();
 		check(Token.IDENTIFIER);
 		String name = current.getLexeme();
 		Position a = current.getPosition();
 
 		Type type = parseType();
 
-		return new Field(Position.expand(a, type.getPosition()), name, type);
+		return new Field(Position.expand(a, type.getPosition()), attributes, name, type);
 	}
 
 	private List<Field> parseFieldList() {
 		check(Token.OPEN_BRACE);
 		List<Field> fields = new ArrayList<Field>();
 
-		while (match(Token.IDENTIFIER)) {
+		while (match(Token.IDENTIFIER) || match(Token.AT)) {
 			fields.add(parseField());
 			accept(Token.COMMA);
 		}
