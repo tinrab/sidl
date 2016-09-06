@@ -28,7 +28,7 @@ public class Identifier extends Node {
 			sb.append(path.get(i));
 
 			if (i < path.size() - 1) {
-				sb.append(":");
+				sb.append(".");
 			}
 		}
 

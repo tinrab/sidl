@@ -29,11 +29,13 @@ public class Lexer {
 		put("f64", Token.TYPE_FLOAT64);
 		put("b", Token.TYPE_BOOL);
 		put("namespace", Token.KEYWORD_NAMESPACE);
+		put("interface", Token.KEYWORD_INTERFACE);
 	}};
 	private static final Map<String, Token> PUNCTUATORS = new HashMap<String, Token>() {{
 		put("*", Token.ASTERISK);
 		put(",", Token.COMMA);
 		put(":", Token.COLON);
+		put(".", Token.DOT);
 		put("=", Token.EQUALS);
 		put("{", Token.OPEN_BRACE);
 		put("}", Token.CLOSE_BRACE);

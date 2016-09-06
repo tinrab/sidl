@@ -10,25 +10,33 @@ type Character {
 	@Unique
 	Name s
 	Speed f32
-	Bag :Inventory:Inventory
-	MainHand RPG:Inventory:Item
+	Bag .Inventory.Inventory
+	MainHand RPG.Inventory.Item
 	Buffs [8]f64
 }
 
 
-namespace RPG:Inventory
+namespace RPG.Inventory
 
 enum Quality u8 { Common = 0, Rare, Epic }
 
+type Inventory {
+	Capacity u
+	Items []*Item
+}
+
 @Cached(timeout = 60)
-type Item {
+interface Item {
 	Name s
 	Quality Quality
 	Cost u64
 }
 
-type Inventory {
-	Capacity u
-	Items []*Item
+type Weapon : Item {
+	Damage u64
+}
+
+type Armor : Item {
+	Defense u64
 }
 ```

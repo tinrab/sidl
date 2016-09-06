@@ -38,6 +38,28 @@ public class ParserTest {
 	}
 
 	@Test
+	public void testInterface() {
+		Document document = SimpleIDL.parse("interface I{A i} interface I2 : I{} type T : I2{B i}");
+		InterfaceDefinition i = (InterfaceDefinition) document.getDefinitions().get(0);
+		InterfaceDefinition i2 = (InterfaceDefinition) document.getDefinitions().get(1);
+		TypeDefinition t = (TypeDefinition) document.getDefinitions().get(2);
+
+		Assert.assertEquals("I", i.getName().getSimpleName());
+		Assert.assertEquals("A", i.getFields().get(0).getName());
+		Assert.assertEquals(Token.TYPE_INT32, ((PrimaryType) i.getFields().get(0).getType())
+				.getToken());
+
+		Assert.assertEquals("I2", i2.getName().getSimpleName());
+		Assert.assertEquals("I", i2.getParentDefinition().getName().getSimpleName());
+
+		Assert.assertEquals("T", t.getName().getSimpleName());
+		Assert.assertEquals("I2", t.getParentDefinition().getName().getSimpleName());
+		Assert.assertEquals("B", t.getFields().get(0).getName());
+		Assert.assertEquals(Token.TYPE_INT32, ((PrimaryType) t.getFields().get(0).getType())
+				.getToken());
+	}
+
+	@Test
 	public void testEnumAST() {
 		Document document = SimpleIDL.parse("enum Quality { Common, Epic }");
 		EnumDefinition ed = (EnumDefinition) document.getDefinitions().get(0);

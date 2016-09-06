@@ -36,4 +36,8 @@ public class SemanticException extends RuntimeException {
 		return new SemanticException("Undefined '" + name + "'");
 	}
 
+	public static SemanticException illegalInterfaceParent(Position position) {
+		return new SemanticException(position, "Illegal interface parent");
+	}
+
 }

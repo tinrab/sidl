@@ -6,11 +6,11 @@ import com.moybl.sidl.ast.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class NameChecker implements Visitor {
+public class NameLinker implements Visitor {
 
 	private Map<String, Definition> typeNames;
 
-	public NameChecker() {
+	public NameLinker() {
 		typeNames = new HashMap<String, Definition>();
 	}
 
@@ -18,7 +18,7 @@ public class NameChecker implements Visitor {
 		for (int i = 0; i < node.getDefinitions().size(); i++) {
 			Definition d = node.getDefinitions().get(i);
 
-			if (d instanceof TypeDefinition || d instanceof EnumDefinition) {
+			if (d instanceof TypeDefinition || d instanceof EnumDefinition || d instanceof InterfaceDefinition) {
 				typeNames.put(d.getDefinedName(), d);
 			}
 		}
@@ -32,6 +32,16 @@ public class NameChecker implements Visitor {
 		if (node.getOldName() != null) {
 			node.getOldName().accept(this);
 		} else {
+			if (node.getParent() != null) {
+				String parent = node.getParent().getCanonicalName();
+
+				if (!typeNames.containsKey(parent)) {
+					throw ParserException.undefined(node.getPosition(), parent);
+				} else {
+					node.setParentDefinition(typeNames.get(parent));
+				}
+			}
+
 			for (int i = 0; i < node.getFields().size(); i++) {
 				node.getFields().get(i).accept(this);
 			}
@@ -78,6 +88,28 @@ public class NameChecker implements Visitor {
 	}
 
 	public void visit(Literal node) {
+	}
+
+	public void visit(InterfaceDefinition node) {
+		if (node.getParent() != null) {
+			String parent = node.getParent().getCanonicalName();
+
+			if (!typeNames.containsKey(parent)) {
+				throw ParserException.undefined(node.getPosition(), parent);
+			} else {
+				Definition pd = typeNames.get(parent);
+
+				if (!(pd instanceof InterfaceDefinition)) {
+					throw SemanticException.illegalInterfaceParent(pd.getPosition());
+				}
+
+				node.setParentDefinition((InterfaceDefinition) pd);
+			}
+		}
+
+		for (int i = 0; i < node.getFields().size(); i++) {
+			node.getFields().get(i).accept(this);
+		}
 	}
 
 }

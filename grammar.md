@@ -5,11 +5,14 @@
 	namespace <Namespace> <Document>
 	<AttributeList> <Definition> <Document>
 <Namespace>:
-	[IDENTIFIER] : <Namespace>
+	[IDENTIFIER] . <Namespace>
 	[IDENTIFIER]
 <Definition>:
+	interface [IDENTIFIER] { <FieldList> }
+	interface [IDENTIFIER] : [IDENTIFIER] { <FieldList> }
 	type [IDENTIFIER] [IDENTIFIER]
 	type [IDENTIFIER] <Type>
+	type [IDENTIFIER] : [IDENTIFIER] { <FieldList> }
 	type [IDENTIFIER] { <FieldList> }
 	enum [IDENTIFIER] { <EnumList> }
 	enum [IDENTIFIER] <IntType> { <EnumList> }

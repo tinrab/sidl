@@ -50,6 +50,8 @@ public class Parser {
 
 		if (next.getToken() == Token.KEYWORD_TYPE) {
 			def = parseTypeDefinition();
+		} else if (next.getToken() == Token.KEYWORD_INTERFACE) {
+			def = parseInterfaceDefinition();
 		} else if (next.getToken() == Token.KEYWORD_ENUM) {
 			def = parseEnumDefinition();
 		} else {
@@ -71,6 +73,24 @@ public class Parser {
 		return new NamespaceDefinition(Position.expand(a, current.getPosition()), name);
 	}
 
+	private InterfaceDefinition parseInterfaceDefinition() {
+		check(Token.KEYWORD_INTERFACE);
+		Position a = current.getPosition();
+		Identifier name = parseIdentifier();
+		Identifier parent = null;
+
+		if (accept(Token.COLON)) {
+			parent = parseIdentifier();
+		}
+
+		check(Token.OPEN_BRACE);
+		List<Field> fields = parseFieldList();
+		check(Token.CLOSE_BRACE);
+
+		return new InterfaceDefinition(Position
+				.expand(a, current.getPosition()), name, parent, fields);
+	}
+
 	private TypeDefinition parseTypeDefinition() {
 		check(Token.KEYWORD_TYPE);
 		Position a = current.getPosition();
@@ -86,9 +106,17 @@ public class Parser {
 			return new TypeDefinition(Position.expand(a, type.getPosition()), name, type);
 		}
 
-		List<Field> fields = parseFieldList();
+		Identifier parent = null;
 
-		return new TypeDefinition(Position.expand(a, current.getPosition()), name, fields);
+		if (accept(Token.COLON)) {
+			parent = parseIdentifier();
+		}
+
+		check(Token.OPEN_BRACE);
+		List<Field> fields = parseFieldList();
+		check(Token.CLOSE_BRACE);
+
+		return new TypeDefinition(Position.expand(a, current.getPosition()), name, parent, fields);
 	}
 
 	private EnumDefinition parseEnumDefinition() {
@@ -177,15 +205,12 @@ public class Parser {
 	}
 
 	private List<Field> parseFieldList() {
-		check(Token.OPEN_BRACE);
 		List<Field> fields = new ArrayList<Field>();
 
 		while (match(Token.IDENTIFIER) || match(Token.AT)) {
 			fields.add(parseField());
 			accept(Token.COMMA);
 		}
-
-		check(Token.CLOSE_BRACE);
 
 		return fields;
 	}
@@ -313,7 +338,7 @@ public class Parser {
 		while (accept(Token.IDENTIFIER)) {
 			path.add(current.getLexeme());
 
-			if (!accept(Token.COLON)) {
+			if (!accept(Token.DOT)) {
 				break;
 			}
 		}

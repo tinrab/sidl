@@ -16,16 +16,19 @@ public class LexerTokensTest {
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][]{
 				{
-						"type enum namespace // comment",
+						"type enum namespace interface // comment",
 						Arrays.asList(
 								Token.KEYWORD_TYPE,
 								Token.KEYWORD_ENUM,
-								Token.KEYWORD_NAMESPACE)
+								Token.KEYWORD_NAMESPACE,
+								Token.KEYWORD_INTERFACE)
 				},
 				{
-						", [] {} () @ 0 42 3.14 7E11 \"hi\" 'hey'/*this is a comment*/",
+						", : . [] {} () @ 0 42 3.14 7E11 \"hi\" 'hey'/*this is a comment*/",
 						Arrays.asList(
 								Token.COMMA,
+								Token.COLON,
+								Token.DOT,
 								Token.OPEN_BRACKET,
 								Token.CLOSE_BRACKET,
 								Token.OPEN_BRACE,

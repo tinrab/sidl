@@ -28,4 +28,6 @@ public interface Visitor {
 
 	void visit(Literal node);
 
+	void visit(InterfaceDefinition node);
+
 }

@@ -6,6 +6,7 @@ public enum Token {
 	IDENTIFIER,
 	COMMA,
 	COLON,
+	DOT,
 	EQUALS,
 	ASTERISK,
 	OPEN_BRACE,
@@ -18,6 +19,7 @@ public enum Token {
 	KEYWORD_TYPE,
 	KEYWORD_ENUM,
 	KEYWORD_NAMESPACE,
+	KEYWORD_INTERFACE,
 	LITERAL_INTEGER,
 	LITERAL_STRING,
 	LITERAL_FLOAT,
@@ -60,6 +62,8 @@ public enum Token {
 				return "*";
 			case COLON:
 				return ":";
+			case DOT:
+				return ".";
 			case OPEN_BRACE:
 				return "{";
 			case EQUALS:
@@ -82,6 +86,8 @@ public enum Token {
 				return "enum";
 			case KEYWORD_NAMESPACE:
 				return "namespace";
+			case KEYWORD_INTERFACE:
+				return "interface";
 			case LITERAL_INTEGER:
 				return "LITERAL_INTEGER";
 			case LITERAL_STRING:

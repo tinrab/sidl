@@ -1,7 +1,7 @@
 package com.moybl.sidl;
 
 import com.moybl.sidl.ast.*;
-import com.moybl.sidl.semantics.NameChecker;
+import com.moybl.sidl.semantics.NameLinker;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -27,7 +27,7 @@ public class SimpleIDL {
 			p = Position.expand(a, b);
 		}
 
-		new Document(p, definitions).accept(new NameChecker());
+		new Document(p, definitions).accept(new NameLinker());
 		Schema s = new Schema();
 		String ns = "";
 
@@ -48,7 +48,7 @@ public class SimpleIDL {
 		Lexer lexer = new Lexer(inputStream);
 		Parser parser = new Parser(lexer);
 		Document document = parser.parse();
-		document.accept(new NameChecker());
+		document.accept(new NameLinker());
 
 		return document;
 	}

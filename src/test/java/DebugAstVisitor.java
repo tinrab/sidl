@@ -97,6 +97,17 @@ public class DebugAstVisitor implements Visitor {
 		print(node.getValue().toString());
 	}
 
+	public void visit(InterfaceDefinition node) {
+		print("interface");
+		node.getName().accept(this);
+
+		ident++;
+		for (int i = 0; i < node.getFields().size(); i++) {
+			node.getFields().get(i).accept(this);
+		}
+		ident--;
+	}
+
 	private void print(String format, Object... args) {
 		for (int i = 0; i < ident * 3; i++) {
 			System.out.print(" ");
