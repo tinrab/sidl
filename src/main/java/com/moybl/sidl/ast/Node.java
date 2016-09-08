@@ -4,16 +4,16 @@ import com.moybl.sidl.Position;
 
 public abstract class Node {
 
-	private Position position;
+  private Position position;
 
-	public Node(Position position) {
-		this.position = position;
-	}
+  public Node(Position position) {
+    this.position = position;
+  }
 
-	public abstract void accept(Visitor visitor);
+  public abstract void accept(Visitor visitor);
 
-	public Position getPosition() {
-		return position;
-	}
+  public Position getPosition() {
+    return position;
+  }
 
 }

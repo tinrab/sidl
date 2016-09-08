@@ -8,108 +8,109 @@ import java.util.Map;
 
 public class NameLinker implements Visitor {
 
-	private Map<String, Definition> typeNames;
+  private Map<String, Definition> typeNames;
 
-	public NameLinker() {
-		typeNames = new HashMap<String, Definition>();
-	}
+  public NameLinker() {
+    typeNames = new HashMap<String, Definition>();
+  }
 
-	public void visit(Document node) {
-		for (int i = 0; i < node.getDefinitions().size(); i++) {
-			Definition d = node.getDefinitions().get(i);
+  public void visit(Document node) {
+    for (int i = 0; i < node.getDefinitions().size(); i++) {
+      Definition d = node.getDefinitions().get(i);
 
-			if (d instanceof TypeDefinition || d instanceof EnumDefinition || d instanceof InterfaceDefinition) {
-				typeNames.put(d.getDefinedName(), d);
-			}
-		}
+      if (d instanceof TypeDefinition || d instanceof EnumDefinition || d instanceof InterfaceDefinition) {
+        typeNames.put(d.getDefinedName(), d);
+      }
+    }
 
-		for (int i = 0; i < node.getDefinitions().size(); i++) {
-			node.getDefinitions().get(i).accept(this);
-		}
-	}
+    for (int i = 0; i < node.getDefinitions().size(); i++) {
+      node.getDefinitions().get(i).accept(this);
+    }
+  }
 
-	public void visit(TypeDefinition node) {
-		if (node.getOldName() != null) {
-			node.getOldName().accept(this);
-		} else {
-			if (node.getParent() != null) {
-				String parent = node.getParent().getCanonicalName();
+  public void visit(TypeDefinition node) {
+    if (node.getOldName() != null) {
+      node.getOldName().accept(this);
+    } else {
+      if (node.getParent() != null) {
+        String parent = node.getParent().getCanonicalName();
 
-				if (!typeNames.containsKey(parent)) {
-					throw ParserException.undefined(node.getPosition(), parent);
-				} else {
-					node.setParentDefinition(typeNames.get(parent));
-				}
-			}
+        if (!typeNames.containsKey(parent)) {
+          throw ParserException.undefined(node.getPosition(), parent);
+        } else {
+          node.setParentDefinition(typeNames.get(parent));
+        }
+      }
 
-			for (int i = 0; i < node.getFields().size(); i++) {
-				node.getFields().get(i).accept(this);
-			}
-		}
-	}
+      for (int i = 0; i < node.getFields().size(); i++) {
+        node.getFields().get(i).accept(this);
+      }
+    }
+  }
 
-	public void visit(EnumDefinition node) {
-	}
+  public void visit(EnumDefinition node) {
+  }
 
-	public void visit(Field node) {
-		node.getType().accept(this);
-	}
+  public void visit(Field node) {
+    node.getType().accept(this);
+  }
 
-	public void visit(ArrayType node) {
-		node.getType().accept(this);
-	}
+  public void visit(ArrayType node) {
+    node.getType().accept(this);
+  }
 
-	public void visit(ListType node) {
-		node.getType().accept(this);
-	}
+  public void visit(ListType node) {
+    node.getType().accept(this);
+  }
 
-	public void visit(Identifier node) {
-		if (!typeNames.containsKey(node.getCanonicalName())) {
-			throw ParserException.undefined(node.getPosition(), node.getCanonicalName());
-		}
-	}
+  public void visit(Identifier node) {
+    if (!typeNames.containsKey(node.getCanonicalName())) {
+      throw ParserException.undefined(node.getPosition(), node.getCanonicalName());
+    }
+  }
 
-	public void visit(EnumValue node) {
-	}
+  public void visit(EnumValue node) {
+  }
 
-	public void visit(PrimaryType node) {
-		if (node.getName() != null) {
-			node.getName().accept(this);
-		}
-	}
+  public void visit(PrimaryType node) {
+    if (node.getName() != null) {
+      node.getName().accept(this);
+      node.setDefinition(typeNames.get(node.getName().getCanonicalName()));
+    }
+  }
 
-	public void visit(NamespaceDefinition node) {
-	}
+  public void visit(NamespaceDefinition node) {
+  }
 
-	public void visit(Attribute node) {
-	}
+  public void visit(Attribute node) {
+  }
 
-	public void visit(AttributeEntry node) {
-	}
+  public void visit(AttributeEntry node) {
+  }
 
-	public void visit(Literal node) {
-	}
+  public void visit(Literal node) {
+  }
 
-	public void visit(InterfaceDefinition node) {
-		if (node.getParent() != null) {
-			String parent = node.getParent().getCanonicalName();
+  public void visit(InterfaceDefinition node) {
+    if (node.getParent() != null) {
+      String parent = node.getParent().getCanonicalName();
 
-			if (!typeNames.containsKey(parent)) {
-				throw ParserException.undefined(node.getPosition(), parent);
-			} else {
-				Definition pd = typeNames.get(parent);
+      if (!typeNames.containsKey(parent)) {
+        throw ParserException.undefined(node.getPosition(), parent);
+      } else {
+        Definition pd = typeNames.get(parent);
 
-				if (!(pd instanceof InterfaceDefinition)) {
-					throw SemanticException.illegalInterfaceParent(pd.getPosition());
-				}
+        if (!(pd instanceof InterfaceDefinition)) {
+          throw SemanticException.illegalInterfaceParent(pd.getPosition());
+        }
 
-				node.setParentDefinition((InterfaceDefinition) pd);
-			}
-		}
+        node.setParentDefinition((InterfaceDefinition) pd);
+      }
+    }
 
-		for (int i = 0; i < node.getFields().size(); i++) {
-			node.getFields().get(i).accept(this);
-		}
-	}
+    for (int i = 0; i < node.getFields().size(); i++) {
+      node.getFields().get(i).accept(this);
+    }
+  }
 
 }

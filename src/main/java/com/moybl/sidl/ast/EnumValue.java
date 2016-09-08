@@ -4,30 +4,30 @@ import com.moybl.sidl.Position;
 
 public class EnumValue extends Node {
 
-	private String name;
-	private Literal value;
+  private String name;
+  private Literal value;
 
-	public EnumValue(Position position, String name, Literal value) {
-		super(position);
-		this.name = name;
-		this.value = value;
-	}
+  public EnumValue(Position position, String name, Literal value) {
+    super(position);
+    this.name = name;
+    this.value = value;
+  }
 
-	@Override
-	public void accept(Visitor visitor) {
-		visitor.visit(this);
-	}
+  @Override
+  public void accept(Visitor visitor) {
+    visitor.visit(this);
+  }
 
-	public String getName() {
-		return name;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public Literal getValue() {
-		return value;
-	}
+  public Literal getValue() {
+    return value;
+  }
 
-	public void setValue(Literal value) {
-		this.value = value;
-	}
+  public void setValue(Literal value) {
+    this.value = value;
+  }
 
 }

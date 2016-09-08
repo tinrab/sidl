@@ -4,8 +4,8 @@ import com.moybl.sidl.Position;
 
 public abstract class Type extends Node {
 
-	public Type(Position position) {
-		super(position);
-	}
-	
+  public Type(Position position) {
+    super(position);
+  }
+
 }
