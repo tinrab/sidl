@@ -2,6 +2,7 @@ package com.moybl.sidl.ast;
 
 import com.moybl.sidl.Position;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TypeDefinition extends Definition {
@@ -9,6 +10,7 @@ public class TypeDefinition extends Definition {
   private Identifier name;
   private Identifier parent;
   private Definition parentDefinition;
+  private List<Definition> parentPath;
   private Identifier oldName;
   private Type type;
   private List<Field> fields;
@@ -50,6 +52,34 @@ public class TypeDefinition extends Definition {
 
   public void setParentDefinition(Definition parentDefinition) {
     this.parentDefinition = parentDefinition;
+
+    parentPath = new ArrayList<Definition>();
+
+    do {
+      parentPath.add(parentDefinition);
+
+      if (parentDefinition instanceof TypeDefinition) {
+        TypeDefinition ptd = (TypeDefinition) parentDefinition;
+        if (ptd.getParentDefinition() != null) {
+          parentDefinition = ptd.getParentDefinition();
+        } else {
+          break;
+        }
+      } else if (parentDefinition instanceof InterfaceDefinition) {
+        InterfaceDefinition pid = (InterfaceDefinition) parentDefinition;
+        if (pid.getParentDefinition() != null) {
+          parentDefinition = pid.getParentDefinition();
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+    } while (parentDefinition != null);
+  }
+
+  public List<Definition> getParentPath() {
+    return parentPath;
   }
 
   public String getDefinedName() {

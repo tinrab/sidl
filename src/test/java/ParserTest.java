@@ -17,24 +17,24 @@ public class ParserTest {
 
     Assert.assertEquals("B", td.getFields().get(0).getName());
     Assert.assertEquals(Token.TYPE_INT32, ((PrimaryType) td.getFields().get(0).getType())
-        .getToken());
+      .getToken());
 
     Assert.assertEquals("C", td.getFields().get(1).getName());
     Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType) td.getFields().get(1)
-        .getType()).getType()).getToken());
+      .getType()).getType()).getToken());
     Assert.assertEquals("D", ((PrimaryType) ((ListType) td.getFields().get(1).getType())
-        .getType()).getName().getSimpleName());
+      .getType()).getName().getSimpleName());
     Assert.assertTrue(((PrimaryType) ((ListType) td.getFields().get(1).getType()).getType())
-        .isReference());
+      .isReference());
 
     Assert.assertEquals("E", td.getFields().get(2).getName());
     Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType) td.getFields().get(1)
-        .getType()).getType())
-        .getToken());
+      .getType()).getType())
+      .getToken());
     Assert.assertEquals("F", ((PrimaryType) ((ListType) td.getFields().get(2).getType())
-        .getType()).getName().getSimpleName());
+      .getType()).getName().getSimpleName());
     Assert.assertFalse(((PrimaryType) ((ListType) td.getFields().get(2).getType()).getType())
-        .isReference());
+      .isReference());
   }
 
   @Test
@@ -47,7 +47,7 @@ public class ParserTest {
     Assert.assertEquals("I", i.getName().getSimpleName());
     Assert.assertEquals("A", i.getFields().get(0).getName());
     Assert.assertEquals(Token.TYPE_INT32, ((PrimaryType) i.getFields().get(0).getType())
-        .getToken());
+      .getToken());
 
     Assert.assertEquals("I2", i2.getName().getSimpleName());
     Assert.assertEquals("I", i2.getParentDefinition().getName().getSimpleName());
@@ -56,7 +56,11 @@ public class ParserTest {
     Assert.assertEquals("I2", t.getParentDefinition().getName().getSimpleName());
     Assert.assertEquals("B", t.getFields().get(0).getName());
     Assert.assertEquals(Token.TYPE_INT32, ((PrimaryType) t.getFields().get(0).getType())
-        .getToken());
+      .getToken());
+
+    List<Definition> tpath = t.getParentPath();
+    Assert.assertEquals("I2", tpath.get(0).getDefinedName());
+    Assert.assertEquals("I", tpath.get(1).getDefinedName());
   }
 
   @Test
@@ -78,13 +82,13 @@ public class ParserTest {
     Assert.assertEquals("B", td.getFields().get(0).getName());
     Assert.assertEquals(10, ((ArrayType) td.getFields().get(0).getType()).getLength());
     Assert.assertEquals(Token.TYPE_BOOL, ((PrimaryType) ((ArrayType) td.getFields().get(0)
-        .getType()).getType()).getToken());
+      .getType()).getType()).getToken());
   }
 
   @Test
   public void testAttributes() {
     Document document = SimpleIDL
-        .parse("@A @B() @C(k1=1, k2='awd', k3=\"ad\", k4 =  3.14) type T{@D f i}");
+      .parse("@A @B() @C(k1=1, k2='awd', k3=\"ad\", k4 =  3.14) type T{@D f i}");
     TypeDefinition td = (TypeDefinition) document.getDefinitions().get(0);
     List<Attribute> a = td.getAttributes();
 
