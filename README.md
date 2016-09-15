@@ -1,4 +1,4 @@
-# Simple Interface Description Language
+# Simple Interface Definition Language
 [![Build Status](https://travis-ci.org/paidgeek/sidl.svg?branch=master)](https://travis-ci.org/paidgeek/sidl)
 
 ## Example
