@@ -7,6 +7,7 @@ import java.util.List;
 
 public class TypeDefinition extends Definition {
 
+  private boolean hasChildren;
   private Identifier name;
   private Identifier parent;
   private Definition parentDefinition;
@@ -38,6 +39,10 @@ public class TypeDefinition extends Definition {
     visitor.visit(this);
   }
 
+  public boolean hasChildren() {
+    return hasChildren;
+  }
+
   public Identifier getName() {
     return name;
   }
@@ -60,6 +65,7 @@ public class TypeDefinition extends Definition {
 
       if (parentDefinition instanceof TypeDefinition) {
         TypeDefinition ptd = (TypeDefinition) parentDefinition;
+        ptd.hasChildren = true;
         if (ptd.getParentDefinition() != null) {
           parentDefinition = ptd.getParentDefinition();
         } else {
