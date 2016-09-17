@@ -16,6 +16,10 @@ public class Schema {
     return new ArrayList<String>(schema.keySet());
   }
 
+  public Map<String, List<Definition>> getRawSchema() {
+    return schema;
+  }
+
   public List<Definition> getDefinitions(String namespace) {
     return schema.get(namespace);
   }

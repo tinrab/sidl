@@ -3,13 +3,14 @@ package com.moybl.sidl.ast;
 import com.moybl.sidl.Position;
 
 import java.util.List;
+import java.util.Map;
 
 public class Attribute extends Node {
 
   private String name;
-  private List<AttributeEntry> entries;
+  private Map<String, AttributeEntry> entries;
 
-  public Attribute(Position position, String name, List<AttributeEntry> entries) {
+  public Attribute(Position position, String name, Map<String, AttributeEntry> entries) {
     super(position);
     this.name = name;
     this.entries = entries;
@@ -23,7 +24,7 @@ public class Attribute extends Node {
     return name;
   }
 
-  public List<AttributeEntry> getEntries() {
+  public Map<String, AttributeEntry> getEntries() {
     return entries;
   }
 

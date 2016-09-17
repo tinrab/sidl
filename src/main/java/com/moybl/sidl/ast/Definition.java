@@ -3,10 +3,11 @@ package com.moybl.sidl.ast;
 import com.moybl.sidl.Position;
 
 import java.util.List;
+import java.util.Map;
 
 public abstract class Definition extends Node {
 
-  private List<Attribute> attributes;
+  private Map<String, Attribute> attributes;
 
   public Definition(Position position) {
     super(position);
@@ -16,11 +17,11 @@ public abstract class Definition extends Node {
 
   public abstract String getDefinedName();
 
-  public List<Attribute> getAttributes() {
+  public Map<String, Attribute> getAttributes() {
     return attributes;
   }
 
-  public void setAttributes(List<Attribute> attributes) {
+  public void setAttributes(Map<String, Attribute> attributes) {
     this.attributes = attributes;
   }
 

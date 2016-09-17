@@ -3,14 +3,15 @@ package com.moybl.sidl.ast;
 import com.moybl.sidl.Position;
 
 import java.util.List;
+import java.util.Map;
 
 public class Field extends Node {
 
-  private List<Attribute> attributes;
+  private Map<String, Attribute> attributes;
   private String name;
   private Type type;
 
-  public Field(Position position, List<Attribute> attributes, String name, Type type) {
+  public Field(Position position, Map<String, Attribute> attributes, String name, Type type) {
     super(position);
     this.attributes = attributes;
     this.name = name;
@@ -21,7 +22,7 @@ public class Field extends Node {
     visitor.visit(this);
   }
 
-  public List<Attribute> getAttributes() {
+  public Map<String, Attribute> getAttributes() {
     return attributes;
   }
 

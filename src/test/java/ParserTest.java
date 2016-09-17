@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 
 public class ParserTest {
 
@@ -90,31 +91,31 @@ public class ParserTest {
     Document document = SimpleIDL
       .parse("@A @B() @C(k1=1, k2='awd', k3=\"ad\", k4 =  3.14) type T{@D f i}");
     TypeDefinition td = (TypeDefinition) document.getDefinitions().get(0);
-    List<Attribute> a = td.getAttributes();
+    Map<String, Attribute> a = td.getAttributes();
 
-    Assert.assertEquals("A", a.get(0).getName());
-    Assert.assertEquals("B", a.get(1).getName());
+    Assert.assertTrue(a.containsKey("A"));
+    Assert.assertTrue(a.containsKey("B"));
 
-    Attribute c = a.get(2);
+    Attribute c = a.get("C");
     Assert.assertEquals("C", c.getName());
 
-    Assert.assertEquals("k1", c.getEntries().get(0).getName());
-    Assert.assertEquals(Literal.Kind.INTEGER, c.getEntries().get(0).getValue().getKind());
-    Assert.assertEquals(1, c.getEntries().get(0).getValue().getLongValue());
+    Assert.assertEquals("k1", c.getEntries().get("k1").getName());
+    Assert.assertEquals(Literal.Kind.INTEGER, c.getEntries().get("k1").getValue().getKind());
+    Assert.assertEquals(1, c.getEntries().get("k1").getValue().getLongValue());
 
-    Assert.assertEquals("k2", c.getEntries().get(1).getName());
-    Assert.assertEquals(Literal.Kind.STRING, c.getEntries().get(1).getValue().getKind());
-    Assert.assertEquals("awd", c.getEntries().get(1).getValue().getStringValue());
+    Assert.assertEquals("k2", c.getEntries().get("k2").getName());
+    Assert.assertEquals(Literal.Kind.STRING, c.getEntries().get("k2").getValue().getKind());
+    Assert.assertEquals("awd", c.getEntries().get("k2").getValue().getStringValue());
 
-    Assert.assertEquals("k3", c.getEntries().get(2).getName());
-    Assert.assertEquals(Literal.Kind.STRING, c.getEntries().get(2).getValue().getKind());
-    Assert.assertEquals("ad", c.getEntries().get(2).getValue().getStringValue());
+    Assert.assertEquals("k3", c.getEntries().get("k3").getName());
+    Assert.assertEquals(Literal.Kind.STRING, c.getEntries().get("k3").getValue().getKind());
+    Assert.assertEquals("ad", c.getEntries().get("k3").getValue().getStringValue());
 
-    Assert.assertEquals("k4", c.getEntries().get(3).getName());
-    Assert.assertEquals(Literal.Kind.FLOAT, c.getEntries().get(3).getValue().getKind());
-    Assert.assertEquals(3.14, c.getEntries().get(3).getValue().getDoubleValue(), 0.01);
+    Assert.assertEquals("k4", c.getEntries().get("k4").getName());
+    Assert.assertEquals(Literal.Kind.FLOAT, c.getEntries().get("k4").getValue().getKind());
+    Assert.assertEquals(3.14, c.getEntries().get("k4").getValue().getDoubleValue(), 0.01);
 
-    Assert.assertEquals("D", td.getFields().get(0).getAttributes().get(0).getName());
+    Assert.assertEquals("D", td.getFields().get(0).getAttributes().get("D").getName());
   }
 
   @Test

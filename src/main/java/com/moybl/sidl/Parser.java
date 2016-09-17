@@ -2,8 +2,7 @@ package com.moybl.sidl;
 
 import com.moybl.sidl.ast.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Parser {
 
@@ -46,7 +45,7 @@ public class Parser {
     }
 
     Definition def = null;
-    List<Attribute> attributes = parseAttributeList();
+    Map<String, Attribute> attributes = parseAttributeList();
 
     if (next.getToken() == Token.KEYWORD_TYPE) {
       def = parseTypeDefinition();
@@ -88,7 +87,7 @@ public class Parser {
     check(Token.CLOSE_BRACE);
 
     return new InterfaceDefinition(Position
-        .expand(a, current.getPosition()), name, parent, fields);
+      .expand(a, current.getPosition()), name, parent, fields);
   }
 
   private TypeDefinition parseTypeDefinition() {
@@ -136,8 +135,8 @@ public class Parser {
 
     if (values.size() != 0) {
       b = Position
-          .expand(values.get(0).getPosition(), values.get(values.size() - 1)
-              .getPosition());
+        .expand(values.get(0).getPosition(), values.get(values.size() - 1)
+          .getPosition());
     } else {
       b = current.getPosition();
     }
@@ -194,7 +193,7 @@ public class Parser {
   }
 
   private Field parseField() {
-    List<Attribute> attributes = parseAttributeList();
+    Map<String, Attribute> attributes = parseAttributeList();
     check(Token.IDENTIFIER);
     String name = current.getLexeme();
     Position a = current.getPosition();
@@ -224,7 +223,7 @@ public class Parser {
         check(Token.CLOSE_BRACKET);
 
         return new ArrayType(Position
-            .expand(a, current.getPosition()), length, parsePrimaryType());
+          .expand(a, current.getPosition()), length, parsePrimaryType());
       } else {
         check(Token.CLOSE_BRACKET);
 
@@ -258,11 +257,12 @@ public class Parser {
     return new PrimaryType(current.getPosition(), current.getToken(), false);
   }
 
-  private List<Attribute> parseAttributeList() {
-    List<Attribute> attributes = new ArrayList<Attribute>();
+  private Map<String, Attribute> parseAttributeList() {
+    Map<String, Attribute> attributes = new HashMap<String, Attribute>();
 
     while (match(Token.AT)) {
-      attributes.add(parseAttribute());
+      Attribute attribute = parseAttribute();
+      attributes.put(attribute.getName(), attribute);
     }
 
     return attributes;
@@ -274,11 +274,12 @@ public class Parser {
     check(Token.IDENTIFIER);
     String name = current.getLexeme();
 
-    List<AttributeEntry> entries = new ArrayList<AttributeEntry>();
+    Map<String, AttributeEntry> entries = new HashMap<String, AttributeEntry>();
 
     if (accept(Token.OPEN_PARENTHESIS)) {
       while (match(Token.IDENTIFIER) || next.getToken().isLiteral()) {
-        entries.add(parseAttributeEntry());
+        AttributeEntry entry = parseAttributeEntry();
+        entries.put(entry.getName(), entry);
         accept(Token.COMMA);
       }
 
