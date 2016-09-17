@@ -53,6 +53,8 @@ public class Parser {
       def = parseInterfaceDefinition();
     } else if (next.getToken() == Token.KEYWORD_ENUM) {
       def = parseEnumDefinition();
+    } else if (next.getToken() == Token.KEYWORD_SERVICE) {
+      def = parseServiceDefinition();
     } else {
       throw ParserException.internal();
     }
@@ -116,6 +118,25 @@ public class Parser {
     check(Token.CLOSE_BRACE);
 
     return new TypeDefinition(Position.expand(a, current.getPosition()), name, parent, fields);
+  }
+
+  private ServiceDefinition parseServiceDefinition() {
+    check(Token.KEYWORD_SERVICE);
+    Position a = current.getPosition();
+    Identifier name = parseIdentifier();
+
+    Identifier parent = null;
+
+    if (accept(Token.COLON)) {
+      parent = parseIdentifier();
+    }
+
+    check(Token.OPEN_BRACE);
+    List<Function> functions = parseFunctionList();
+    check(Token.CLOSE_BRACE);
+
+    return new ServiceDefinition(Position
+      .expand(a, current.getPosition()), name, parent, functions);
   }
 
   private EnumDefinition parseEnumDefinition() {
@@ -306,6 +327,43 @@ public class Parser {
     }
 
     return new AttributeEntry(Position.expand(a, current.getPosition()), name, value);
+  }
+
+  private Function parseFunction() {
+    check(Token.IDENTIFIER);
+    Position a = current.getPosition();
+    String name = current.getLexeme();
+    check(Token.OPEN_PARENTHESIS);
+    List<Parameter> parameters = parseParameterList();
+    check(Token.CLOSE_PARENTHESIS);
+    Type type = parseType();
+
+    return new Function(Position.expand(a, current.getPosition()), name, parameters, type);
+  }
+
+  private List<Function> parseFunctionList() {
+    List<Function> functions = new ArrayList<Function>();
+
+    while (match(Token.IDENTIFIER)) {
+      functions.add(parseFunction());
+      accept(Token.COMMA);
+    }
+
+    return functions;
+  }
+
+  private List<Parameter> parseParameterList() {
+    List<Parameter> parameters = new ArrayList<Parameter>();
+
+    do {
+      check(Token.IDENTIFIER);
+      Position a = current.getPosition();
+      String name = current.getLexeme();
+      Type type = parseType();
+      parameters.add(new Parameter(Position.expand(a, current.getPosition()), name, type));
+    } while (accept(Token.COMMA));
+
+    return parameters;
   }
 
   private Literal parseLiteral() {

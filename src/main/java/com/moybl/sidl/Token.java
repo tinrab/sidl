@@ -20,6 +20,7 @@ public enum Token {
   KEYWORD_ENUM,
   KEYWORD_NAMESPACE,
   KEYWORD_INTERFACE,
+  KEYWORD_SERVICE,
   LITERAL_INTEGER,
   LITERAL_STRING,
   LITERAL_FLOAT,
@@ -88,6 +89,8 @@ public enum Token {
         return "namespace";
       case KEYWORD_INTERFACE:
         return "interface";
+      case KEYWORD_SERVICE:
+        return "service";
       case LITERAL_INTEGER:
         return "LITERAL_INTEGER";
       case LITERAL_STRING:

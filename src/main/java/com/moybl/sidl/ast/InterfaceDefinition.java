@@ -12,12 +12,14 @@ public class InterfaceDefinition extends Definition {
   private Identifier parent;
   private List<InterfaceDefinition> parentPath;
   private InterfaceDefinition parentDefinition;
+  private List<Definition> children;
 
   public InterfaceDefinition(Position position, Identifier name, Identifier parent, List<Field> fields) {
     super(position);
     this.name = name;
     this.parent = parent;
     this.fields = fields;
+    children = new ArrayList<Definition>();
   }
 
   public void accept(Visitor visitor) {
@@ -30,6 +32,18 @@ public class InterfaceDefinition extends Definition {
 
   public Identifier getParent() {
     return parent;
+  }
+
+  public boolean hasChildren() {
+    return children.size() != 0;
+  }
+
+  public List<Definition> getChildren() {
+    return children;
+  }
+
+  public void setChildren(List<Definition> children) {
+    this.children = children;
   }
 
   public InterfaceDefinition getParentDefinition() {

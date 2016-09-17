@@ -40,4 +40,8 @@ public class SemanticException extends RuntimeException {
     return new SemanticException(position, "Illegal interface parent");
   }
 
+  public static SemanticException illegalServiceParent(Position position) {
+    return new SemanticException(position, "Illegal service parent");
+  }
+
 }

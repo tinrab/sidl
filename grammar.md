@@ -16,6 +16,8 @@
 	type [IDENTIFIER] { <FieldList> }
 	enum [IDENTIFIER] { <EnumList> }
 	enum [IDENTIFIER] <IntType> { <EnumList> }
+	service [IDENTIFIER] { <FuncList> }
+	service [IDENTIFIER] : [IDENTIFIER] { <FuncList> }
 <FieldList>:
 	empty
 	<Field>
@@ -50,6 +52,13 @@
 <AttributeEntry>:
 	<Literal>
 	[IDENTIFIER] = <Literal>
+<FuncList>:
+	empty
+	[IDENTIFIER] ( <ParameterList> ) <Type> <ListDelimiter> <FuncList>
+<ParameterList>:
+  empty
+  [IDENTIFIER] <Type>
+  [IDENTIFIER] <Type> , <ParameterList>
 <Literal>:
 	[LITERAL_INTEGER]
 	[LITERAL_STRING]

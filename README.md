@@ -15,6 +15,9 @@ type Character {
 	Buffs [8]f64
 }
 
+service RPGService {
+  func GetItemByName(Name s) Item
+}
 
 namespace RPG.Inventory
 

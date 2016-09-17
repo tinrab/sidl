@@ -30,4 +30,10 @@ public interface Visitor {
 
   void visit(InterfaceDefinition node);
 
+  void visit(Parameter node);
+
+  void visit(Function node);
+
+  void visit(ServiceDefinition node);
+
 }

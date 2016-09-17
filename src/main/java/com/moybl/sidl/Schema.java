@@ -1,15 +1,18 @@
 package com.moybl.sidl;
 
 import com.moybl.sidl.ast.Definition;
+import com.moybl.sidl.ast.TypeDefinition;
 
 import java.util.*;
 
 public class Schema {
 
   private Map<String, List<Definition>> schema;
+  private String topNamespace;
 
   public Schema() {
     schema = new HashMap<String, List<Definition>>();
+    topNamespace = "";
   }
 
   public List<String> getNamespaces() {
@@ -25,6 +28,9 @@ public class Schema {
   }
 
   public void addDefinition(String namespace, Definition definition) {
+    List<String> namePath = definition.getName().getPath();
+    topNamespace = namePath.get(0);
+
     if (schema.containsKey(namespace)) {
       schema.get(namespace).add(definition);
     } else {
@@ -32,6 +38,10 @@ public class Schema {
       definitions.add(definition);
       schema.put(namespace, definitions);
     }
+  }
+
+  public String getTopNamespace() {
+    return topNamespace;
   }
 
 }

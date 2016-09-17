@@ -162,4 +162,20 @@ public class ParserTest {
     Assert.assertEquals("A.B.C", nd.getDefinedName());
   }
 
+  @Test
+  public void testServiceDefinition() {
+    Document d = SimpleIDL.parse("service S { F(p1 u, p2 f32) i }");
+    ServiceDefinition s = (ServiceDefinition) d.getDefinitions().get(0);
+
+    Assert.assertEquals("S", s.getDefinedName());
+    Assert.assertEquals("F", s.getFunctions().get(0).getName());
+    Assert.assertEquals(Token.TYPE_INT32, ((PrimaryType) s.getFunctions().get(0).getType()).getToken());
+
+    List<Parameter> p = s.getFunctions().get(0).getParameters();
+    Assert.assertEquals("p1", p.get(0).getName());
+    Assert.assertEquals(Token.TYPE_UINT32, ((PrimaryType) p.get(0).getType()).getToken());
+    Assert.assertEquals("p2", p.get(1).getName());
+    Assert.assertEquals(Token.TYPE_FLOAT32, ((PrimaryType) p.get(1).getType()).getToken());
+  }
+
 }

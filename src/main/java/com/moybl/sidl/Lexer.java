@@ -30,6 +30,7 @@ public class Lexer {
     put("b", Token.TYPE_BOOL);
     put("namespace", Token.KEYWORD_NAMESPACE);
     put("interface", Token.KEYWORD_INTERFACE);
+    put("service", Token.KEYWORD_SERVICE);
   }};
   private static final Map<String, Token> PUNCTUATORS = new HashMap<String, Token>() {{
     put("*", Token.ASTERISK);
