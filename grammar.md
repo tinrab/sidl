@@ -10,28 +10,32 @@
 <Definition>:
 	interface [IDENTIFIER] { <FieldList> }
 	interface [IDENTIFIER] : [IDENTIFIER] { <FieldList> }
-	type [IDENTIFIER] [IDENTIFIER]
-	type [IDENTIFIER] <Type>
-	type [IDENTIFIER] : [IDENTIFIER] { <FieldList> }
-	type [IDENTIFIER] { <FieldList> }
+	struct [IDENTIFIER] { <StructFieldList> }
+	class [IDENTIFIER] : [IDENTIFIER] { <FieldList> }
+	class [IDENTIFIER] { <ClassFieldList> }
 	enum [IDENTIFIER] { <EnumList> }
 	enum [IDENTIFIER] <IntType> { <EnumList> }
 	service [IDENTIFIER] { <FuncList> }
 	service [IDENTIFIER] : [IDENTIFIER] { <FuncList> }
-<FieldList>:
+<StructFieldList>:
 	empty
-	<Field>
-	<Field> <ListDelimiter> <FieldList>
-<Field>:
+	<StructField>
+	<StructField> <ListDelimiter> <StructFieldList>
+<StructField>:
+  <AttributeList> [IDENTIFIER] <Type> # <Type>: only primitive types and other structs
+<ClassFieldList>:
+	empty
+	<ClassField>
+	<ClassField> <ListDelimiter> <ClassFieldList>
+<ClassField>:
 	<AttributeList> [IDENTIFIER] <Type>
-	<AttributeList> [IDENTIFIER] { <FieldList> }
 <Type>:
-	[]<PrimaryType>
-	[[LITERAL_INTEGER]]<PrimaryType>
+	[] <PrimaryType> # vector
+	[ [LITERAL_INTEGER] ] <PrimaryType> # array
+	< <PrimaryType> , <PrimaryType> > # map
 	<PrimaryType>
 <PrimaryType>:
 	[IDENTIFIER]
-	*[IDENTIFIER]
 	s | bool | <IntType>
 <EnumList>:
 	<EnumValue>

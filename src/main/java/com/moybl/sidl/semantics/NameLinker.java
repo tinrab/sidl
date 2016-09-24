@@ -18,7 +18,7 @@ public class NameLinker implements Visitor {
     for (int i = 0; i < node.getDefinitions().size(); i++) {
       Definition d = node.getDefinitions().get(i);
 
-      if (d instanceof TypeDefinition || d instanceof EnumDefinition || d instanceof InterfaceDefinition) {
+      if (d instanceof ClassDefinition || d instanceof EnumDefinition || d instanceof InterfaceDefinition || d instanceof StructDefinition) {
         typeNames.put(d.getDefinedName(), d);
       }
     }
@@ -28,30 +28,39 @@ public class NameLinker implements Visitor {
     }
   }
 
-  public void visit(TypeDefinition node) {
-    if (node.getOldName() != null) {
-      node.getOldName().accept(this);
-    } else {
-      if (node.getParent() != null) {
-        String parent = node.getParent().getCanonicalName();
+  public void visit(ClassDefinition node) {
+    if (node.getParent() != null) {
+      String parent = node.getParent().getCanonicalName();
 
-        if (!typeNames.containsKey(parent)) {
-          throw ParserException.undefined(node.getPosition(), parent);
-        } else {
-          Definition pd = typeNames.get(parent);
+      if (!typeNames.containsKey(parent)) {
+        throw ParserException.undefined(node.getPosition(), parent);
+      } else {
+        Definition pd = typeNames.get(parent);
 
-          if (pd instanceof TypeDefinition) {
-            ((TypeDefinition) pd).getChildren().add(node);
-          } else if (pd instanceof InterfaceDefinition) {
-            ((InterfaceDefinition) pd).getChildren().add(node);
-          }
-
-          node.setParentDefinition(pd);
+        if (pd instanceof ClassDefinition) {
+          ((ClassDefinition) pd).getChildren().add(node);
+        } else if (pd instanceof InterfaceDefinition) {
+          ((InterfaceDefinition) pd).getChildren().add(node);
         }
-      }
 
-      for (int i = 0; i < node.getFields().size(); i++) {
-        node.getFields().get(i).accept(this);
+        node.setParentDefinition(pd);
+      }
+    }
+
+    for (int i = 0; i < node.getFields().size(); i++) {
+      node.getFields().get(i).accept(this);
+    }
+  }
+
+  public void visit(StructDefinition node) {
+    for (int i = 0; i < node.getFields().size(); i++) {
+      PrimaryType type = (PrimaryType) node.getFields().get(i).getType();
+      // allow only primitives or other structs as types
+      if (type.getName() != null) {
+        type.getName().accept(this);
+        if (!(typeNames.get(type.getName().getCanonicalName()) instanceof StructDefinition)) {
+          throw SemanticException.illegalStructType(type.getPosition());
+        }
       }
     }
   }
@@ -67,7 +76,7 @@ public class NameLinker implements Visitor {
     node.getType().accept(this);
   }
 
-  public void visit(ListType node) {
+  public void visit(VectorType node) {
     node.getType().accept(this);
   }
 
@@ -151,6 +160,9 @@ public class NameLinker implements Visitor {
     for (int i = 0; i < node.getFunctions().size(); i++) {
       node.getFunctions().get(i).accept(this);
     }
+  }
+
+  public void visit(MapType node) {
   }
 
 }

@@ -16,9 +16,10 @@ public class LexerTokensTest {
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][]{
         {
-            "type enum namespace interface // comment",
+            "class struct enum namespace interface // comment",
             Arrays.asList(
-                Token.KEYWORD_TYPE,
+                Token.KEYWORD_CLASS,
+              Token.KEYWORD_STRUCT,
                 Token.KEYWORD_ENUM,
                 Token.KEYWORD_NAMESPACE,
                 Token.KEYWORD_INTERFACE)

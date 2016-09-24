@@ -1,7 +1,6 @@
 package com.moybl.sidl;
 
 import com.moybl.sidl.ast.Definition;
-import com.moybl.sidl.ast.TypeDefinition;
 
 import java.util.*;
 

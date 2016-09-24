@@ -4,28 +4,34 @@
 ## Example
 An example using all features.
 ```
-namespace RPG
+namespace Rpg
 
-type Character {
+struct Position {
+  float x
+  float y
+}
+
+class Character {
 	@Unique
 	Name s
+	Position Position
 	Speed f32
 	Bag .Inventory.Inventory
-	MainHand RPG.Inventory.Item
+	Equipment <s, Rpg.Inventory.Item>
 	Buffs [8]f64
 }
 
-service RPGService {
-  func GetItemByName(Name s) Item
+service RpgService {
+  GetItemByName(Name s) Item
 }
 
-namespace RPG.Inventory
+namespace Rpg.Inventory
 
 enum Quality u8 { Common = 0, Rare, Epic }
 
-type Inventory {
+class Inventory {
 	Capacity u
-	Items []*Item
+	Items []Item
 }
 
 @Cached(timeout = 60)
@@ -35,11 +41,8 @@ interface Item {
 	Cost u64
 }
 
-type Weapon : Item {
+class Weapon : Item {
 	Damage u64
 }
 
-type Armor : Item {
-	Defense u64
-}
 ```

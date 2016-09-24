@@ -12,7 +12,8 @@ public class Lexer {
   private int column;
 
   private static final Map<String, Token> RESERVED_WORDS = new HashMap<String, Token>() {{
-    put("type", Token.KEYWORD_TYPE);
+    put("class", Token.KEYWORD_CLASS);
+    put("struct", Token.KEYWORD_STRUCT);
     put("enum", Token.KEYWORD_ENUM);
     put("s", Token.TYPE_STRING);
     put("i", Token.TYPE_INT32);
@@ -45,6 +46,8 @@ public class Lexer {
     put("(", Token.OPEN_PARENTHESIS);
     put(")", Token.CLOSE_PARENTHESIS);
     put("@", Token.AT);
+    put("<", Token.LESS);
+    put(">", Token.GREATER);
   }};
 
   public Lexer(InputStream stream) {

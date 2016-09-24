@@ -4,7 +4,7 @@ public interface Visitor {
 
   void visit(Document node);
 
-  void visit(TypeDefinition node);
+  void visit(ClassDefinition node);
 
   void visit(EnumDefinition node);
 
@@ -12,7 +12,7 @@ public interface Visitor {
 
   void visit(ArrayType node);
 
-  void visit(ListType node);
+  void visit(VectorType node);
 
   void visit(Identifier node);
 
@@ -35,5 +35,9 @@ public interface Visitor {
   void visit(Function node);
 
   void visit(ServiceDefinition node);
+
+  void visit(MapType node);
+
+  void visit(StructDefinition node);
 
 }

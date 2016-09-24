@@ -45,6 +45,10 @@ public class ParserException extends RuntimeException {
         .format("Expected integer type, got '%s'", actual));
   }
 
+  public static ParserException illegalStructType(Position position) {
+    return new ParserException(position, "Illegal struct type");
+  }
+
   public static ParserException illegalLeftHandSide(Position position) {
     return new ParserException(position, "Illegal left hand side value");
   }

@@ -44,4 +44,8 @@ public class SemanticException extends RuntimeException {
     return new SemanticException(position, "Illegal service parent");
   }
 
+  public static SemanticException illegalStructType(Position position) {
+    return new SemanticException(position, "Illegal struct type");
+  }
+
 }

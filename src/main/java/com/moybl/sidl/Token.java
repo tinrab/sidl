@@ -16,7 +16,10 @@ public enum Token {
   OPEN_PARENTHESIS,
   CLOSE_PARENTHESIS,
   AT,
-  KEYWORD_TYPE,
+  LESS,
+  GREATER,
+  KEYWORD_CLASS,
+  KEYWORD_STRUCT,
   KEYWORD_ENUM,
   KEYWORD_NAMESPACE,
   KEYWORD_INTERFACE,
@@ -81,8 +84,14 @@ public enum Token {
         return ")";
       case AT:
         return "@";
-      case KEYWORD_TYPE:
-        return "type";
+      case LESS:
+        return "<";
+      case GREATER:
+        return ">";
+      case KEYWORD_CLASS:
+        return "class";
+      case KEYWORD_STRUCT:
+        return "struct";
       case KEYWORD_ENUM:
         return "enum";
       case KEYWORD_NAMESPACE:

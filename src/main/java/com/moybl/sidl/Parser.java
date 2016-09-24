@@ -22,6 +22,10 @@ public class Parser {
     Position a = next.getPosition();
     List<Definition> definitions = parseDefinitions();
 
+    if (definitions.size() == 0) {
+      return new Document(new Position(0, 0), definitions);
+    }
+
     return new Document(Position.expand(a, current.getPosition()), definitions);
   }
 
@@ -47,8 +51,10 @@ public class Parser {
     Definition def = null;
     Map<String, Attribute> attributes = parseAttributeList();
 
-    if (next.getToken() == Token.KEYWORD_TYPE) {
-      def = parseTypeDefinition();
+    if (next.getToken() == Token.KEYWORD_CLASS) {
+      def = parseClassDefinition();
+    } else if (next.getToken() == Token.KEYWORD_STRUCT) {
+      def = parseStructDefinition();
     } else if (next.getToken() == Token.KEYWORD_INTERFACE) {
       def = parseInterfaceDefinition();
     } else if (next.getToken() == Token.KEYWORD_ENUM) {
@@ -85,27 +91,17 @@ public class Parser {
     }
 
     check(Token.OPEN_BRACE);
-    List<Field> fields = parseFieldList();
+    List<Field> fields = parseClassFieldList();
     check(Token.CLOSE_BRACE);
 
     return new InterfaceDefinition(Position
       .expand(a, current.getPosition()), name, parent, fields);
   }
 
-  private TypeDefinition parseTypeDefinition() {
-    check(Token.KEYWORD_TYPE);
+  private ClassDefinition parseClassDefinition() {
+    check(Token.KEYWORD_CLASS);
     Position a = current.getPosition();
     Identifier name = parseIdentifier();
-
-    if (match(Token.IDENTIFIER)) {
-      Identifier oldName = parseIdentifier();
-
-      return new TypeDefinition(Position.expand(a, oldName.getPosition()), name, oldName);
-    } else if (next.getToken().isType()) {
-      Type type = parseType();
-
-      return new TypeDefinition(Position.expand(a, type.getPosition()), name, type);
-    }
 
     Identifier parent = null;
 
@@ -114,10 +110,22 @@ public class Parser {
     }
 
     check(Token.OPEN_BRACE);
-    List<Field> fields = parseFieldList();
+    List<Field> fields = parseClassFieldList();
     check(Token.CLOSE_BRACE);
 
-    return new TypeDefinition(Position.expand(a, current.getPosition()), name, parent, fields);
+    return new ClassDefinition(Position.expand(a, current.getPosition()), name, parent, fields);
+  }
+
+  private StructDefinition parseStructDefinition() {
+    check(Token.KEYWORD_STRUCT);
+    Position a = current.getPosition();
+    Identifier name = parseIdentifier();
+
+    check(Token.OPEN_BRACE);
+    List<Field> fields = parseStructFieldList();
+    check(Token.CLOSE_BRACE);
+
+    return new StructDefinition(Position.expand(a, current.getPosition()), name, fields);
   }
 
   private ServiceDefinition parseServiceDefinition() {
@@ -213,7 +221,29 @@ public class Parser {
     return new EnumValue(Position.expand(a, current.getPosition()), name, value);
   }
 
-  private Field parseField() {
+  private Field parseStructField() {
+    Map<String, Attribute> attributes = parseAttributeList();
+    check(Token.IDENTIFIER);
+    String name = current.getLexeme();
+    Position a = current.getPosition();
+
+    PrimaryType type = parsePrimaryType();
+
+    return new Field(Position.expand(a, type.getPosition()), attributes, name, type);
+  }
+
+  private List<Field> parseStructFieldList() {
+    List<Field> fields = new ArrayList<Field>();
+
+    while (match(Token.IDENTIFIER) || match(Token.AT)) {
+      fields.add(parseStructField());
+      accept(Token.COMMA);
+    }
+
+    return fields;
+  }
+
+  private Field parseClassField() {
     Map<String, Attribute> attributes = parseAttributeList();
     check(Token.IDENTIFIER);
     String name = current.getLexeme();
@@ -224,11 +254,11 @@ public class Parser {
     return new Field(Position.expand(a, type.getPosition()), attributes, name, type);
   }
 
-  private List<Field> parseFieldList() {
+  private List<Field> parseClassFieldList() {
     List<Field> fields = new ArrayList<Field>();
 
     while (match(Token.IDENTIFIER) || match(Token.AT)) {
-      fields.add(parseField());
+      fields.add(parseClassField());
       accept(Token.COMMA);
     }
 
@@ -248,25 +278,26 @@ public class Parser {
       } else {
         check(Token.CLOSE_BRACKET);
 
-        return new ListType(Position.expand(a, current.getPosition()), parsePrimaryType());
+        return new VectorType(Position.expand(a, current.getPosition()), parsePrimaryType());
       }
+    } else if (accept(Token.LESS)) {
+      Position a = current.getPosition();
+      PrimaryType keyType = parsePrimaryType();
+      check(Token.COMMA);
+      PrimaryType valueType = parsePrimaryType();
+      check(Token.GREATER);
+
+      return new MapType(Position.expand(a, current.getPosition()), keyType, valueType);
     }
 
     return parsePrimaryType();
   }
 
   private PrimaryType parsePrimaryType() {
-    if (accept(Token.ASTERISK)) {
-      Position a = current.getPosition();
-      Identifier name = parseIdentifier();
-
-      return new PrimaryType(Position.expand(a, name.getPosition()), name, true);
-    }
-
     if (match(Token.IDENTIFIER) | match(Token.DOT)) {
       Identifier name = parseAccessIdentifier();
 
-      return new PrimaryType(name.getPosition(), name, false);
+      return new PrimaryType(name.getPosition(), name);
     }
 
     if (!next.getToken().isType()) {
@@ -275,7 +306,7 @@ public class Parser {
 
     check(next.getToken());
 
-    return new PrimaryType(current.getPosition(), current.getToken(), false);
+    return new PrimaryType(current.getPosition(), current.getToken());
   }
 
   private Map<String, Attribute> parseAttributeList() {

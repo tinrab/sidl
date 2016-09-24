@@ -5,52 +5,32 @@ import com.moybl.sidl.Position;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TypeDefinition extends Definition {
+public class ClassDefinition extends Definition {
 
-  private List<TypeDefinition> children;
+  private List<ClassDefinition> children;
   private Identifier name;
   private Identifier parent;
   private Definition parentDefinition;
   private List<Definition> parentPath;
-  private Identifier oldName;
-  private Type type;
   private List<Field> fields;
 
-  public TypeDefinition(Position position, Identifier name, Identifier oldName) {
-    super(position);
-    this.name = name;
-    this.oldName = oldName;
-    children = new ArrayList<TypeDefinition>();
-  }
-
-  public TypeDefinition(Position position, Identifier name, Type type) {
-    super(position);
-    this.name = name;
-    this.type = type;
-    children = new ArrayList<TypeDefinition>();
-  }
-
-  public TypeDefinition(Position position, Identifier name, Identifier parent, List<Field> fields) {
+  public ClassDefinition(Position position, Identifier name, Identifier parent, List<Field> fields) {
     super(position);
     this.name = name;
     this.parent = parent;
     this.fields = fields;
-    children = new ArrayList<TypeDefinition>();
+    children = new ArrayList<ClassDefinition>();
   }
 
   public void accept(Visitor visitor) {
     visitor.visit(this);
   }
 
-  public boolean hasChildren() {
-    return children.size() != 0;
-  }
-
-  public List<TypeDefinition> getChildren() {
+  public List<ClassDefinition> getChildren() {
     return children;
   }
 
-  public void setChildren(List<TypeDefinition> children) {
+  public void setChildren(List<ClassDefinition> children) {
     this.children = children;
   }
 
@@ -74,8 +54,8 @@ public class TypeDefinition extends Definition {
     do {
       parentPath.add(parentDefinition);
 
-      if (parentDefinition instanceof TypeDefinition) {
-        TypeDefinition ptd = (TypeDefinition) parentDefinition;
+      if (parentDefinition instanceof ClassDefinition) {
+        ClassDefinition ptd = (ClassDefinition) parentDefinition;
         if (ptd.getParentDefinition() != null) {
           parentDefinition = ptd.getParentDefinition();
         } else {
@@ -100,14 +80,6 @@ public class TypeDefinition extends Definition {
 
   public String getDefinedName() {
     return name.getCanonicalName();
-  }
-
-  public Identifier getOldName() {
-    return oldName;
-  }
-
-  public Type getType() {
-    return type;
   }
 
   public List<Field> getFields() {

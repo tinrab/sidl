@@ -1,5 +1,6 @@
 import com.moybl.sidl.*;
 import com.moybl.sidl.ast.*;
+import com.moybl.sidl.semantics.SemanticException;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,9 +11,14 @@ import java.util.Map;
 public class ParserTest {
 
   @Test
+  public void testEmpty() {
+    SimpleIDL.parse("");
+  }
+
+  @Test
   public void testTypeAST() {
-    Document document = SimpleIDL.parse("type D{} type F{} type A { B i C []*D, E []F }");
-    TypeDefinition td = (TypeDefinition) document.getDefinitions().get(2);
+    Document document = SimpleIDL.parse("class D{} class F{} class A { B i C []D, E []F }");
+    ClassDefinition td = (ClassDefinition) document.getDefinitions().get(2);
 
     Assert.assertEquals("A", td.getName().getSimpleName());
 
@@ -21,29 +27,25 @@ public class ParserTest {
       .getToken());
 
     Assert.assertEquals("C", td.getFields().get(1).getName());
-    Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType) td.getFields().get(1)
+    Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((VectorType) td.getFields().get(1)
       .getType()).getType()).getToken());
-    Assert.assertEquals("D", ((PrimaryType) ((ListType) td.getFields().get(1).getType())
+    Assert.assertEquals("D", ((PrimaryType) ((VectorType) td.getFields().get(1).getType())
       .getType()).getName().getSimpleName());
-    Assert.assertTrue(((PrimaryType) ((ListType) td.getFields().get(1).getType()).getType())
-      .isReference());
 
     Assert.assertEquals("E", td.getFields().get(2).getName());
-    Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((ListType) td.getFields().get(1)
+    Assert.assertEquals(Token.IDENTIFIER, ((PrimaryType) ((VectorType) td.getFields().get(1)
       .getType()).getType())
       .getToken());
-    Assert.assertEquals("F", ((PrimaryType) ((ListType) td.getFields().get(2).getType())
+    Assert.assertEquals("F", ((PrimaryType) ((VectorType) td.getFields().get(2).getType())
       .getType()).getName().getSimpleName());
-    Assert.assertFalse(((PrimaryType) ((ListType) td.getFields().get(2).getType()).getType())
-      .isReference());
   }
 
   @Test
   public void testInterface() {
-    Document document = SimpleIDL.parse("interface I{A i} interface I2 : I{} type T : I2{B i}");
+    Document document = SimpleIDL.parse("interface I{A i} interface I2 : I{} class T : I2{B i}");
     InterfaceDefinition i = (InterfaceDefinition) document.getDefinitions().get(0);
     InterfaceDefinition i2 = (InterfaceDefinition) document.getDefinitions().get(1);
-    TypeDefinition t = (TypeDefinition) document.getDefinitions().get(2);
+    ClassDefinition t = (ClassDefinition) document.getDefinitions().get(2);
 
     Assert.assertEquals("I", i.getName().getSimpleName());
     Assert.assertEquals("A", i.getFields().get(0).getName());
@@ -76,8 +78,8 @@ public class ParserTest {
 
   @Test
   public void testArrayType() {
-    Document document = SimpleIDL.parse("type A { B [10]b }");
-    TypeDefinition td = (TypeDefinition) document.getDefinitions().get(0);
+    Document document = SimpleIDL.parse("class A { B [10]b }");
+    ClassDefinition td = (ClassDefinition) document.getDefinitions().get(0);
 
     Assert.assertEquals("A", td.getName().getSimpleName());
     Assert.assertEquals("B", td.getFields().get(0).getName());
@@ -89,8 +91,8 @@ public class ParserTest {
   @Test
   public void testAttributes() {
     Document document = SimpleIDL
-      .parse("@A @B() @C(k1=1, k2='awd', k3=\"ad\", k4 =  3.14) type T{@D f i}");
-    TypeDefinition td = (TypeDefinition) document.getDefinitions().get(0);
+      .parse("@A @B() @C(k1=1, k2='awd', k3=\"ad\", k4 =  3.14) class T{@D f i}");
+    ClassDefinition td = (ClassDefinition) document.getDefinitions().get(0);
     Map<String, Attribute> a = td.getAttributes();
 
     Assert.assertTrue(a.containsKey("A"));
@@ -121,32 +123,15 @@ public class ParserTest {
   @Test
   public void testUndefined() {
     try {
-      SimpleIDL.parse("type Item { Quality Quality }");
+      SimpleIDL.parse("class Item { Quality Quality }");
     } catch (ParserException e) {
-      Assert.assertEquals("[1:22-1:29]: 'Quality' not defined", e.getMessage());
+      Assert.assertEquals("[1:23-1:30]: 'Quality' not defined", e.getMessage());
 
       Position p = e.getPosition();
       Assert.assertEquals(1, p.getStartLine());
-      Assert.assertEquals(22, p.getStartColumn());
+      Assert.assertEquals(23, p.getStartColumn());
       Assert.assertEquals(1, p.getEndLine());
-      Assert.assertEquals(29, p.getEndColumn());
-
-      return;
-    }
-
-    Assert.fail();
-  }
-
-  @Test
-  public void testUndefinedOldName() {
-    try {
-      SimpleIDL.parse("type New Old");
-    } catch (ParserException e) {
-      Assert.assertEquals("[1:10-1:13]: 'Old' not defined", e.getMessage());
-
-      Position p = e.getPosition();
-      Assert.assertEquals(1, p.getStartLine());
-      Assert.assertEquals(10, p.getStartColumn());
+      Assert.assertEquals(30, p.getEndColumn());
 
       return;
     }
@@ -169,13 +154,61 @@ public class ParserTest {
 
     Assert.assertEquals("S", s.getDefinedName());
     Assert.assertEquals("F", s.getFunctions().get(0).getName());
-    Assert.assertEquals(Token.TYPE_INT32, ((PrimaryType) s.getFunctions().get(0).getType()).getToken());
+    Assert
+      .assertEquals(Token.TYPE_INT32, ((PrimaryType) s.getFunctions().get(0).getType()).getToken());
 
     List<Parameter> p = s.getFunctions().get(0).getParameters();
     Assert.assertEquals("p1", p.get(0).getName());
     Assert.assertEquals(Token.TYPE_UINT32, ((PrimaryType) p.get(0).getType()).getToken());
     Assert.assertEquals("p2", p.get(1).getName());
     Assert.assertEquals(Token.TYPE_FLOAT32, ((PrimaryType) p.get(1).getType()).getToken());
+  }
+
+  @Test
+  public void testMapType() {
+    Document d = SimpleIDL.parse("struct Value {v i} class T { m <s, Value> }");
+    StructDefinition valueDef = (StructDefinition) d.getDefinitions().get(0);
+    ClassDefinition tDef = (ClassDefinition) d.getDefinitions().get(1);
+
+    Assert.assertEquals("Value", valueDef.getDefinedName());
+    Assert.assertEquals("v", valueDef.getFields().get(0).getName());
+    Assert.assertEquals(Token.TYPE_INT32, ((PrimaryType) valueDef.getFields().get(0).getType())
+      .getToken());
+
+    Assert.assertEquals("T", tDef.getDefinedName());
+    Assert.assertEquals("m", tDef.getFields().get(0).getName());
+    MapType m = (MapType) tDef.getFields().get(0).getType();
+    Assert.assertEquals(Token.TYPE_STRING, m.getKeyType().getToken());
+    Assert.assertEquals("Value", m.getValueType().getName().getSimpleName());
+  }
+
+  @Test
+  public void testValidStructFieldTypes() {
+    SimpleIDL.parse("struct S {a s, v i}");
+  }
+
+  @Test(expected = ParserException.class)
+  public void testInvalidStructFieldType() {
+    SimpleIDL.parse("struct S {a []i}");
+  }
+
+  @Test(expected = SemanticException.class)
+  public void testIllegalStructFieldClassType() {
+    SimpleIDL.parse("class T{} struct S{a T}");
+  }
+
+  @Test
+  public void testStruct() {
+    Document d = SimpleIDL.parse("struct S { x i, y s }");
+    StructDefinition s = (StructDefinition) d.getDefinitions().get(0);
+
+    Assert.assertEquals("S", s.getDefinedName());
+    Assert.assertEquals("x", s.getFields().get(0).getName());
+    Assert
+      .assertEquals(Token.TYPE_INT32, ((PrimaryType) s.getFields().get(0).getType()).getToken());
+    Assert.assertEquals("y", s.getFields().get(1).getName());
+    Assert
+      .assertEquals(Token.TYPE_STRING, ((PrimaryType) s.getFields().get(1).getType()).getToken());
   }
 
 }
