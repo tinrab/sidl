@@ -22,7 +22,7 @@
 	<StructField>
 	<StructField> <ListDelimiter> <StructFieldList>
 <StructField>:
-  <AttributeList> [IDENTIFIER] <Type> # <Type>: only primitive types and other structs
+  <AttributeList> [IDENTIFIER] <Type> # <Type>: only scalar types and other structs
 <ClassFieldList>:
 	empty
 	<ClassField>

@@ -1,6 +1,7 @@
 package com.moybl.sidl.semantics;
 
 import com.moybl.sidl.ParserException;
+import com.moybl.sidl.Token;
 import com.moybl.sidl.ast.*;
 
 import java.util.HashMap;
@@ -55,12 +56,14 @@ public class NameLinker implements Visitor {
   public void visit(StructDefinition node) {
     for (int i = 0; i < node.getFields().size(); i++) {
       PrimaryType type = (PrimaryType) node.getFields().get(i).getType();
-      // allow only primitives or other structs as types
+      // allow only scalars or other structs as types
       if (type.getName() != null) {
         type.getName().accept(this);
         if (!(typeNames.get(type.getName().getCanonicalName()) instanceof StructDefinition)) {
           throw SemanticException.illegalStructType(type.getPosition());
         }
+      } else if(type.getToken() == Token.TYPE_STRING) {
+        throw SemanticException.illegalStructType(type.getPosition());
       }
     }
   }

@@ -184,7 +184,7 @@ public class ParserTest {
 
   @Test
   public void testValidStructFieldTypes() {
-    SimpleIDL.parse("struct S {a s, v i}");
+    SimpleIDL.parse("struct S {a f64, v i}");
   }
 
   @Test(expected = ParserException.class)
@@ -199,7 +199,7 @@ public class ParserTest {
 
   @Test
   public void testStruct() {
-    Document d = SimpleIDL.parse("struct S { x i, y s }");
+    Document d = SimpleIDL.parse("struct S { x i, y f32 }");
     StructDefinition s = (StructDefinition) d.getDefinitions().get(0);
 
     Assert.assertEquals("S", s.getDefinedName());
@@ -208,7 +208,7 @@ public class ParserTest {
       .assertEquals(Token.TYPE_INT32, ((PrimaryType) s.getFields().get(0).getType()).getToken());
     Assert.assertEquals("y", s.getFields().get(1).getName());
     Assert
-      .assertEquals(Token.TYPE_STRING, ((PrimaryType) s.getFields().get(1).getType()).getToken());
+      .assertEquals(Token.TYPE_FLOAT32, ((PrimaryType) s.getFields().get(1).getType()).getToken());
   }
 
 }
