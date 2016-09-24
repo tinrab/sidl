@@ -7,8 +7,8 @@ An example using all features.
 namespace Rpg
 
 struct Position {
-  float x
-  float y
+  x f32
+  y f32
 }
 
 class Character {
