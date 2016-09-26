@@ -166,6 +166,8 @@ public class NameLinker implements Visitor {
   }
 
   public void visit(MapType node) {
+    node.getKeyType().accept(this);
+    node.getValueType().accept(this);
   }
 
 }
