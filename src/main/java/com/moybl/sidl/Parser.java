@@ -283,6 +283,11 @@ public class Parser {
     } else if (accept(Token.LESS)) {
       Position a = current.getPosition();
       PrimaryType keyType = parsePrimaryType();
+
+      if(!keyType.getToken().isType() || keyType.getToken() == Token.TYPE_BOOL) {
+        throw ParserException.illegalMapKeyType(keyType.getPosition(), keyType.getToken());
+      }
+
       check(Token.COMMA);
       PrimaryType valueType = parsePrimaryType();
       check(Token.GREATER);

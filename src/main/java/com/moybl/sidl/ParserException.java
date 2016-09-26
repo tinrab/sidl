@@ -58,6 +58,11 @@ public class ParserException extends RuntimeException {
         .format("'%s' not defined", name));
   }
 
+  public static ParserException illegalMapKeyType(Position position, Token token) {
+    return new ParserException(position, String
+      .format("Illegal map key type '%s'", token.toString()));
+  }
+
   public static ParserException enumInvalidOrder(Position position) {
     return new ParserException(position, "Enum values must be specified in ascending order");
   }
