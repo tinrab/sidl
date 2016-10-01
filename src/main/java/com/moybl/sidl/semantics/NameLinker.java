@@ -55,6 +55,10 @@ public class NameLinker implements Visitor {
 
   public void visit(StructDefinition node) {
     for (int i = 0; i < node.getFields().size(); i++) {
+      node.getFields().get(i).accept(this);
+    }
+
+    for (int i = 0; i < node.getFields().size(); i++) {
       Type type = node.getFields().get(i).getType();
       PrimaryType pt = null;
 
