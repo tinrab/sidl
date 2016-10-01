@@ -22,7 +22,7 @@
 	<StructField>
 	<StructField> <ListDelimiter> <StructFieldList>
 <StructField>:
-  <AttributeList> [IDENTIFIER] <Type> # <Type>: only scalar types, other structs and arrays
+  <AttributeList> [IDENTIFIER] <Type> # <Type>: only ints, enums, other structs and arrays
 <ClassFieldList>:
 	empty
 	<ClassField>

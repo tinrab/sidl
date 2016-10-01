@@ -199,8 +199,8 @@ public class ParserTest {
 
   @Test
   public void testStruct() {
-    Document d = SimpleIDL.parse("struct S { x i, y f32 }");
-    StructDefinition s = (StructDefinition) d.getDefinitions().get(0);
+    Document d = SimpleIDL.parse("enum E{A,B} struct S { x i, y f32, z E }");
+    StructDefinition s = (StructDefinition) d.getDefinitions().get(1);
 
     Assert.assertEquals("S", s.getDefinedName());
     Assert.assertEquals("x", s.getFields().get(0).getName());

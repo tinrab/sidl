@@ -55,7 +55,6 @@ public class NameLinker implements Visitor {
 
   public void visit(StructDefinition node) {
     for (int i = 0; i < node.getFields().size(); i++) {
-      // allow only scalars, other structs and arrays
       Type type = node.getFields().get(i).getType();
       PrimaryType pt = null;
 
@@ -69,7 +68,8 @@ public class NameLinker implements Visitor {
 
       if (pt.getName() != null) {
         pt.getName().accept(this);
-        if (!(typeNames.get(pt.getName().getCanonicalName()) instanceof StructDefinition)) {
+        Definition typeDef = typeNames.get(pt.getName().getCanonicalName());
+        if (!(typeDef instanceof StructDefinition || typeDef instanceof EnumDefinition)) {
           throw SemanticException.illegalStructType(type.getPosition());
         }
       } else if (pt.getToken() == Token.TYPE_STRING) {

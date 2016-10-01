@@ -73,8 +73,9 @@ public class Parser {
   private NamespaceDefinition parseNamespaceDefinition() {
     check(Token.KEYWORD_NAMESPACE);
     Position a = current.getPosition();
-    Identifier name = parseIdentifier();
 
+    currentPath = null;
+    Identifier name = parseIdentifier();
     currentPath = name.getPath();
 
     return new NamespaceDefinition(Position.expand(a, current.getPosition()), name);
@@ -262,7 +263,7 @@ public class Parser {
       Position a = current.getPosition();
       PrimaryType keyType = parsePrimaryType();
 
-      if(!keyType.getToken().isType() || keyType.getToken() == Token.TYPE_BOOL) {
+      if (!keyType.getToken().isType() || keyType.getToken() == Token.TYPE_BOOL) {
         throw ParserException.illegalMapKeyType(keyType.getPosition(), keyType.getToken());
       }
 
