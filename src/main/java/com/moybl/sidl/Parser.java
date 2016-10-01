@@ -91,7 +91,7 @@ public class Parser {
     }
 
     check(Token.OPEN_BRACE);
-    List<Field> fields = parseClassFieldList();
+    List<Field> fields = parseFieldList();
     check(Token.CLOSE_BRACE);
 
     return new InterfaceDefinition(Position
@@ -110,7 +110,7 @@ public class Parser {
     }
 
     check(Token.OPEN_BRACE);
-    List<Field> fields = parseClassFieldList();
+    List<Field> fields = parseFieldList();
     check(Token.CLOSE_BRACE);
 
     return new ClassDefinition(Position.expand(a, current.getPosition()), name, parent, fields);
@@ -122,7 +122,7 @@ public class Parser {
     Identifier name = parseIdentifier();
 
     check(Token.OPEN_BRACE);
-    List<Field> fields = parseStructFieldList();
+    List<Field> fields = parseFieldList();
     check(Token.CLOSE_BRACE);
 
     return new StructDefinition(Position.expand(a, current.getPosition()), name, fields);
@@ -221,29 +221,7 @@ public class Parser {
     return new EnumValue(Position.expand(a, current.getPosition()), name, value);
   }
 
-  private Field parseStructField() {
-    Map<String, Attribute> attributes = parseAttributeList();
-    check(Token.IDENTIFIER);
-    String name = current.getLexeme();
-    Position a = current.getPosition();
-
-    PrimaryType type = parsePrimaryType();
-
-    return new Field(Position.expand(a, type.getPosition()), attributes, name, type);
-  }
-
-  private List<Field> parseStructFieldList() {
-    List<Field> fields = new ArrayList<Field>();
-
-    while (match(Token.IDENTIFIER) || match(Token.AT)) {
-      fields.add(parseStructField());
-      accept(Token.COMMA);
-    }
-
-    return fields;
-  }
-
-  private Field parseClassField() {
+  private Field parseField() {
     Map<String, Attribute> attributes = parseAttributeList();
     check(Token.IDENTIFIER);
     String name = current.getLexeme();
@@ -254,11 +232,11 @@ public class Parser {
     return new Field(Position.expand(a, type.getPosition()), attributes, name, type);
   }
 
-  private List<Field> parseClassFieldList() {
+  private List<Field> parseFieldList() {
     List<Field> fields = new ArrayList<Field>();
 
     while (match(Token.IDENTIFIER) || match(Token.AT)) {
-      fields.add(parseClassField());
+      fields.add(parseField());
       accept(Token.COMMA);
     }
 

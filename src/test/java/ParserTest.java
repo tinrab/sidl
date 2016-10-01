@@ -187,9 +187,9 @@ public class ParserTest {
     SimpleIDL.parse("struct S {a f64, v i}");
   }
 
-  @Test(expected = ParserException.class)
+  @Test(expected = SemanticException.class)
   public void testInvalidStructFieldType() {
-    SimpleIDL.parse("struct S {a []i}");
+    SimpleIDL.parse("struct S {a []s}");
   }
 
   @Test(expected = SemanticException.class)
